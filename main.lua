@@ -8,9 +8,8 @@ local World = require("world")
 -- Initialization function: runs once when game starts
 function love.load()
 
-	World.load()
+	World.load("Map1")
 	Characters.initialize()
-	setupTileset()
 --	love.graphics.setFont(12) -- wants a font, not a number
 
 end
@@ -33,7 +32,7 @@ function love.draw()
 	Characters.draw(scale)
 
 	-- print FPS over everything
-	love.graphics.print("FPS: "..love.timer.getFPS(), 10, 20)
+	love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 20)
 end
 
 
