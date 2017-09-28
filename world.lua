@@ -2,14 +2,18 @@ local World = {
 	map = {}
 }
 
+local Characters = require("characters")
+
 -- Adjustable parameters
-local speedScale = 500
+local speedScale = 0.002
 local tileSize = 16
 
+-- Defaults
 local camX = 1
 local camY = 1
 local scale = 3
 
+-- Initialized when loaded
 local worldWidth, worldHeight
 local screenWidthTileNum, screenHeightTileNum
 local tilesetBatch
@@ -72,6 +76,23 @@ function setupTileset()
 	tilesetBatch = love.graphics.newSpriteBatch(tilesetImage, screenWidthTileNum * screenHeightTileNum)
 
 	updateTilesetBatch()
+
+end
+
+function World.update(dt)
+
+	local oldX = camX
+	local oldY = camY
+
+	-- Update world map positioning
+
+	camX = math.max(math.min(Characters.ID["player"].xPos / tileSize, worldWidth - screenWidthTileNum), 1)
+	camY = math.max(math.min(Characters.ID["player"].yPos / tileSize, worldHeight - screenHeightTileNum), 1)
+
+	-- only update if we actually moved
+	if math.floor(camX) ~= math.floor(oldX) or math.floor(camY) ~= math.floor(oldY) then
+		updateTilesetBatch()
+	end
 
 end
 

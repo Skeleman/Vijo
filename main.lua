@@ -18,28 +18,9 @@ end
 -- Main processing function; called continuously; dt = change in time in seconds
 function love.update(dt)
 
-	local char
+	Characters.update(dt)
+	World.update(dt)
 
-	if love.keyboard.isDown("up") then
-		shiftWorld(0, -Characters.ID["player"].speed * tileSize * dt / speedScale)
-	end
-	if love.keyboard.isDown("down") then
-		shiftWorld(0, Characters.ID["player"].speed * tileSize * dt / speedScale)
-	end
-	if love.keyboard.isDown("left") then
-		shiftWorld(-Characters.ID["player"].speed * tileSize * dt / speedScale, 0)
-	end
-	if love.keyboard.isDown("right") then
-		shiftWorld(Characters.ID["player"].speed * tileSize * dt / speedScale, 0)
-	end
-
-	-- Loop through all characters (FIXME: Only apply to visible characters)
-	for name in pairs(Characters.ID) do
-		Characters.ID[name].anim.currentTime = Characters.ID[name].anim.currentTime + dt
-		if Characters.ID[name].anim.currentTime >= Characters.ID[name].anim.duration then
-			Characters.ID[name].anim.currentTime = Characters.ID[name].anim.currentTime - Characters.ID[name].anim.duration
-		end
-	end
 end
 
 -- Main graphics function; called continuously. love.graphics only has an effect here
@@ -106,7 +87,7 @@ function love.keypressed(key)
 
 		Characters.ID["player"].direction = key
 		Characters.ID["player"].state = "moving"
-		Characters.ID["player"]:updateAnimation(true)
+		Characters.ID["player"]:nextAnimation(true)
 
 	end
 end
@@ -127,7 +108,7 @@ function love.keyreleased(key)
 		else
 			Characters.ID["player"].state = "idle"
 		end
-		Characters.ID["player"]:updateAnimation()
+		Characters.ID["player"]:nextAnimation()
 	end
 end
 

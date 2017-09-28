@@ -4,7 +4,8 @@ local Characters = {
 }
 
 local spriteSheet
-local speedScale = 100
+local speedScale = 2
+local animScale = 0.01
 
 function Characters.initialize()
 
@@ -44,10 +45,10 @@ function Characters:new(name, type, width, height, speed)
 	char.animationSet["idle"]["up"] = newAnimation(spriteSheet, width, height, type, {3}, 1)
 	char.animationSet["idle"]["left"] = newAnimation(spriteSheet, width, height, type, {6}, 1)
 	char.animationSet["idle"]["right"] = newAnimation(spriteSheet, width, height, type, {9}, 1)
-	char.animationSet["moving"]["down"]= newAnimation(spriteSheet, width, height, type, {1, 0, 2, 0}, speed / speedScale)
-	char.animationSet["moving"]["up"] = newAnimation(spriteSheet, width, height, type, {4, 3, 5, 3}, speed / speedScale)
-	char.animationSet["moving"]["left"] = newAnimation(spriteSheet, width, height, type, {7, 6, 8, 6}, speed / speedScale)
-	char.animationSet["moving"]["right"] = newAnimation(spriteSheet, width, height, type, {10, 9, 11, 9}, speed / speedScale)
+	char.animationSet["moving"]["down"]= newAnimation(spriteSheet, width, height, type, {1, 0, 2, 0}, speed * animScale)
+	char.animationSet["moving"]["up"] = newAnimation(spriteSheet, width, height, type, {4, 3, 5, 3}, speed * animScale)
+	char.animationSet["moving"]["left"] = newAnimation(spriteSheet, width, height, type, {7, 6, 8, 6}, speed * animScale)
+	char.animationSet["moving"]["right"] = newAnimation(spriteSheet, width, height, type, {10, 9, 11, 9}, speed * animScale)
 
 	-- Assign current animation set
 	char.anim = char.animationSet["idle"]["down"]
@@ -56,12 +57,57 @@ function Characters:new(name, type, width, height, speed)
 
 end
 
-function Characters:updateAnimation(reset)
+function Characters.update(dt)
 
+	local name
+
+	-- Update player based on user input
+	if love.keyboard.isDown("up") then
+		Characters.ID["player"]:move(dt, "up")
+	end
+	if love.keyboard.isDown("down") then
+		Characters.ID["player"]:move(dt, "down")
+	end
+	if love.keyboard.isDown("left") then
+		Characters.ID["player"]:move(dt, "left")
+	end
+	if love.keyboard.isDown("right") then
+		Characters.ID["player"]:move(dt, "right")
+	end
+
+	-- Loop through all characters and update according to all game systems(FIXME: Only apply to visible characters)
+	for name in pairs(Characters.ID) do
+		-- Move forward in animations
+		Characters.ID[name]:updateAnimationTime(dt)
+	end
+end
+
+function Characters:updateAnimationTime(dt)
+	self.anim.currentTime = self.anim.currentTime + dt
+	if self.anim.currentTime >= self.anim.duration then
+		self.anim.currentTime = self.anim.currentTime - self.anim.duration
+	end
+end
+
+function Characters:nextAnimation(reset)
 	self.anim = self.animationSet[self.state][self.direction]
-
 	if reset then
 		self.anim.currentTime = 0
+	end
+end
+
+function Characters:move(dt, direction)
+
+	local distance = self.speed * speedScale * dt
+
+	if (direction == "up") then
+		self.yPos = self.yPos - distance
+	elseif (direction == "down") then
+		self.yPos = self.yPos + distance
+	elseif (direction == "left") then
+		self.xPos = self.xPos - distance
+	else
+		self.xPos = self.xPos + distance
 	end
 
 end
