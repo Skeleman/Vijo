@@ -23,7 +23,7 @@ function love.update(dt)
 
 	Characters.update(dt)
 	if(Camera.mode == "followPlayer") then
-		Camera:setPosition(Characters.ID["player"].xPos - (love.graphics.getWidth() / 2), Characters.ID["player"].yPos - (love.graphics.getHeight() / 2))
+		Camera:follow(Characters.ID["player"].xPos, Characters.ID["player"].yPos)
 	end
 	World.update(Camera.x, Camera.y)
 
@@ -32,7 +32,7 @@ end
 -- Main graphics function; called continuously. love.graphics only has an effect here
 function love.draw()
 
---	Camera:setScale(scale, scale)
+	Camera:setScale(scale, scale)
 	Camera:set()
 
 	-- drawBackground()

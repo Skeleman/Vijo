@@ -12,7 +12,7 @@ local World = require("world")
 function Camera:set()   
   love.graphics.push()
   love.graphics.rotate(-self.rotation)
-  love.graphics.scale(1 / self.scaleX, 1 / self.scaleY)
+  love.graphics.scale(self.scaleX, self.scaleY)
   love.graphics.translate(-self.x, -self.y)
 end
 
@@ -36,13 +36,21 @@ function Camera:scale(sx, sy)
 end
 
 function Camera:setPosition(x, y)
-  self.x = x < 0 and 0 or (x > World.width * World.tileSize and (World.width + 1) * World.tileSize or x)
-  self.y = y < 0 and 0 or (y > World.height * World.tileSize and (World.height + 1) * World.tileSize or y)
+  self.x = x or self.x
+  self.y = y or self.y
 end
 
 function Camera:setScale(sx, sy)
   self.scaleX = sx or self.scaleX
   self.scaleY = sy or self.scaleY
+end
+
+function Camera:follow(x, y)
+  x = x - love.graphics.getWidth() / 2 / self.scaleX
+  y = y - love.graphics.getHeight() / 2 / self.scaleY
+  self.x = x < 0 and 0 or (x > (World.width - World.displayWidth) * World.tileSize and (World.width - World.displayWidth + 1) * World.tileSize or x)
+  self.y = y < 0 and 0 or (y > (World.height - World.displayHeight) * World.tileSize and (World.height - World.displayHeight + 1) * World.tileSize or y)
+  
 end
 
 return Camera

@@ -8,7 +8,7 @@ local World = {
 local Characters = require("characters")
 
 -- Initialized when loaded
-local tilesetBatch
+local baseLayer
 local mapQuads = {}
 
 local oldX = 0
@@ -69,7 +69,7 @@ function setupTileset(name, tileXCount, tileYCount)
 	end
 
 	-- Load tileset
-	tilesetBatch = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
+	baseLayer = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
 
 	-- Initialize
 	updateWorldTiles(1, 1)
@@ -79,8 +79,8 @@ end
 -- Update what portion of the world is graphically defined
 function World.update(camX, camY)
 
-	camX = math.ceil(camX / World.tileSize) * 4
-	camY = math.ceil(camY / World.tileSize) * 4
+	camX = math.ceil(camX / World.tileSize)
+	camY = math.ceil(camY / World.tileSize)
 
 	-- Clamp coordinates to prevent index error
 	camX = math.max(math.min(camX, World.width - World.displayWidth + 1), 1)
@@ -96,11 +96,9 @@ function World.update(camX, camY)
 
 end
 
--- Render world offset for smooth scrolling
+-- Render world, with offset for smooth scrolling
 function World.draw(camX, camY)
-	love.graphics.draw(tilesetBatch, 
-		-math.floor(camX % World.tileSize), -math.floor(camY % World.tileSize),
-		0)
+	love.graphics.draw(baseLayer, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
 end
 
 -- Re-define sprite batch based on what is visible
@@ -108,14 +106,14 @@ function updateWorldTiles(screenTileX, screenTileY)
 
 	local xCoord, yCoord
 
-	tilesetBatch:clear()
+	baseLayer:clear()
 	for xCoord = 0, World.displayWidth - 1 do
 		for yCoord = 0, World.displayHeight - 1 do
-			tilesetBatch:add(mapQuads[World.map[xCoord + screenTileX][yCoord + screenTileY]],
+			baseLayer:add(mapQuads[World.map[xCoord + screenTileX][yCoord + screenTileY]],
 				xCoord * World.tileSize, yCoord * World.tileSize)
 		end
 	end
-	tilesetBatch:flush()
+	baseLayer:flush()
 
 end
 

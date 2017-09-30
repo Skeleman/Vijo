@@ -115,7 +115,7 @@ function Characters:move(dt, direction)
 
 end
 
-function Characters.draw()
+function Characters.draw(camX, camY)
 
 
 	local spriteNum
