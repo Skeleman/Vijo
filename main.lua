@@ -25,17 +25,22 @@ function love.update(dt)
 	if(Camera.mode == "followPlayer") then
 		Camera:setPosition(Characters.ID["player"].xPos - (love.graphics.getWidth() / 2), Characters.ID["player"].yPos - (love.graphics.getHeight() / 2))
 	end
-	World.update(Camera.x, Camera.y, scale)
+	World.update(Camera.x, Camera.y)
 
 end
 
 -- Main graphics function; called continuously. love.graphics only has an effect here
 function love.draw()
 
+--	Camera:setScale(scale, scale)
+	Camera:set()
+
 	-- drawBackground()
-	World.draw(Camera.x, Camera.y, scale)
+	World.draw(Camera.x, Camera.y)
 	-- drawDetails()
-	Characters.draw(Camera.x, Camera.y, scale)
+	Characters.draw(Camera.x, Camera.y)
+
+	Camera:unset()
 
 	-- print FPS over everything
 	love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 20)

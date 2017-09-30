@@ -19,7 +19,7 @@ function World.load(worldName, scale)
 	local xCoord
 	local yCoord
 
-	print ("Loading world...")
+	print ("Loading world and parameters...")
 	local Map = require (worldName)	-- FIXME: find way to load file from subdirectory, or write means of paring other file type
 
 	-- Load map parameters FIXME: Determine from map file
@@ -46,7 +46,6 @@ end
 function World.updateDimension(scale)
 	World.displayWidth = math.ceil(love.graphics.getWidth() / World.tileSize / scale) + 1
 	World.displayHeight =  math.ceil(love.graphics.getHeight() / World.tileSize / scale) + 1
-	print ("Width = "..World.displayWidth..", Height = "..World.displayHeight)
 end
 
 function setupTileset(name, tileXCount, tileYCount)
@@ -78,10 +77,10 @@ function setupTileset(name, tileXCount, tileYCount)
 end
 
 -- Update what portion of the world is graphically defined
-function World.update(camX, camY, scale)
+function World.update(camX, camY)
 
-	camX = math.ceil(camX / World.tileSize / scale)
-	camY = math.ceil(camY / World.tileSize / scale)
+	camX = math.ceil(camX / World.tileSize) * 4
+	camY = math.ceil(camY / World.tileSize) * 4
 
 	-- Clamp coordinates to prevent index error
 	camX = math.max(math.min(camX, World.width - World.displayWidth + 1), 1)
@@ -98,10 +97,10 @@ function World.update(camX, camY, scale)
 end
 
 -- Render world offset for smooth scrolling
-function World.draw(camX, camY, scale)
+function World.draw(camX, camY)
 	love.graphics.draw(tilesetBatch, 
-		math.floor(-scale * ((camX / scale) % World.tileSize)), math.floor(-scale * ((camY / scale) % World.tileSize)),
-		0, scale, scale)
+		-math.floor(camX % World.tileSize), -math.floor(camY % World.tileSize),
+		0)
 end
 
 -- Re-define sprite batch based on what is visible

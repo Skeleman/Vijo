@@ -36,8 +36,8 @@ function Camera:scale(sx, sy)
 end
 
 function Camera:setPosition(x, y)
-  self.x = x < 0 and 0 or (x > (World.width - World.displayWidth) * World.tileSize and (World.width - World.displayWidth + 1) * World.tileSize or x)
-  self.y = y < 0 and 0 or (y > (World.height - World.displayHeight) * World.tileSize and (World.height - World.displayHeight + 1) * World.tileSize or y)
+  self.x = x < 0 and 0 or (x > World.width * World.tileSize and (World.width + 1) * World.tileSize or x)
+  self.y = y < 0 and 0 or (y > World.height * World.tileSize and (World.height + 1) * World.tileSize or y)
 end
 
 function Camera:setScale(sx, sy)

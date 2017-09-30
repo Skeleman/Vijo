@@ -115,7 +115,8 @@ function Characters:move(dt, direction)
 
 end
 
-function Characters.draw(camX, camY, scale)
+function Characters.draw()
+
 
 	local spriteNum
 
@@ -126,9 +127,9 @@ function Characters.draw(camX, camY, scale)
 		spriteNum = math.floor(Characters.ID[name].anim.currentTime / Characters.ID[name].anim.duration * #Characters.ID[name].anim.quads) + 1
 		-- Draw selected frame
 		love.graphics.draw(spriteSheet, Characters.ID[name].anim.quads[spriteNum],
-							Characters.ID[name].xPos - camX, 
-							Characters.ID[name].yPos - camY,
-							 0, scale, scale,
+							Characters.ID[name].xPos, 
+							Characters.ID[name].yPos,
+							 0, 1, 1,
 							(Characters.ID[name].width * Characters.ID[name].spriteSize / 2),
 							(Characters.ID[name].height * Characters.ID[name].spriteSize / 2))
 
