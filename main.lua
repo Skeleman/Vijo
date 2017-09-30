@@ -1,15 +1,19 @@
 -- Globals
 
+local Camera = require("camera")
 local Characters = require("characters")
 local World = require("world")
+
+local scale = 3
 
 -- PRIMARY FUNCTIONS
 
 -- Initialization function: runs once when game starts
 function love.load()
 
-	World.load("Map1")
+	World.load("Map1", scale)
 	Characters.initialize()
+	Camera.target = "player"
 --	love.graphics.setFont(12) -- wants a font, not a number
 
 end
@@ -18,18 +22,20 @@ end
 function love.update(dt)
 
 	Characters.update(dt)
-	World.update(dt)
+	if(Camera.mode == "followPlayer") then
+		Camera:setPosition(Characters.ID["player"].xPos - (love.graphics.getWidth() / 2), Characters.ID["player"].yPos - (love.graphics.getHeight() / 2))
+	end
+	World.update(Camera.x, Camera.y)
 
 end
 
 -- Main graphics function; called continuously. love.graphics only has an effect here
 function love.draw()
 
-	local scale = 5
 	-- drawBackground()
-	World.draw(scale)
+	World.draw(Camera.x, Camera.y, scale)
 	-- drawDetails()
-	Characters.draw(scale)
+	Characters.draw(Camera.x, Camera.y, scale)
 
 	-- print FPS over everything
 	love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 20)
@@ -87,6 +93,10 @@ function love.keypressed(key)
 		Characters.ID["player"].direction = key
 		Characters.ID["player"].state = "moving"
 		Characters.ID["player"]:nextAnimation(true)
+
+		print("Character X = "..Characters.ID["player"].xPos..", Character Y = "..Characters.ID["player"].yPos)
+		print("Camera X = "..Camera.x..", Camera Y = "..Camera.y)
+		print()
 
 	end
 end

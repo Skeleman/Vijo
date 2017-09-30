@@ -5,13 +5,7 @@ local World = {
 local Characters = require("characters")
 
 -- Adjustable parameters
-local speedScale = 0.002
 local tileSize = 16
-
--- Defaults
-local camX = 1
-local camY = 1
-local scale = 3
 
 -- Initialized when loaded
 local worldWidth, worldHeight
@@ -19,7 +13,10 @@ local screenWidthTileNum, screenHeightTileNum
 local tilesetBatch
 local mapQuads = {}
 
-function World.load(worldName)
+local oldX = 0
+local oldY = 0
+
+function World.load(worldName, scale)
 
 	print ("Loading world...")
 	local Map = require (worldName)	-- FIXME: find way to load file from subdirectory, or write means of paring other file type
@@ -27,12 +24,11 @@ function World.load(worldName)
 	local xCoord
 	local yCoord
 
+	World.updateDimension(scale)
+
 	-- Load map parameters FIXME: Determine from map file
 	worldWidth = Map.width
 	worldHeight = Map.height
-
-	screenWidthTileNum = math.floor(love.graphics.getWidth() / tileSize / scale) + 1
-	screenHeightTileNum =  math.floor(love.graphics.getHeight() / tileSize / scale) + 1
 
 	-- Load map coordinate information
 	for xCoord = 1, worldWidth do
@@ -48,6 +44,11 @@ function World.load(worldName)
 
 end
 
+function World.updateDimension(scale)
+	screenWidthTileNum = math.ceil(love.graphics.getWidth() / tileSize / scale) + 1
+	screenHeightTileNum =  math.ceil(love.graphics.getHeight() / tileSize / scale) + 1
+	print ("Width = "..screenWidthTileNum..", Height = "..screenHeightTileNum)
+end
 
 function setupTileset(name, tileXCount, tileYCount)
 
@@ -69,78 +70,50 @@ function setupTileset(name, tileXCount, tileYCount)
 		end
 	end
 
-	-- grass
---	mapQuads[0] = love.graphics.newQuad(0 * tileSize, 0 * tileSize, tileSize, tileSize,
---		imageWidth, imageHeight)
-
-	-- path
---	mapQuads[1] = love.graphics.newQuad(14 * tileSize, 3 * tileSize, tileSize, tileSize,
---		imageWidth, imageHeight)
-
-	-- deep grass
---	mapQuads[2] = love.graphics.newQuad(1 * tileSize, 0 * tileSize, tileSize, tileSize,
---		imageWidth, imageHeight)
-
-	-- flower grass
---	mapQuads[3] = love.graphics.newQuad(2 * tileSize, 0 * tileSize, tileSize, tileSize,
---		imageWidth, imageHeight)
-
-	-- load tileset
+	-- Load tileset
 	tilesetBatch = love.graphics.newSpriteBatch(tilesetImage, screenWidthTileNum * screenHeightTileNum)
 
-	updateTilesetBatch()
+	-- Initialize
+	updateWorldTiles(1, 1)
 
 end
 
-function World.update(dt)
+-- Update what portion of the world is graphically defined
+function World.update(camX, camY)
 
-	local oldX = camX
-	local oldY = camY
+	camX = math.ceil(camX / tileSize)
+	camY = math.ceil(camY / tileSize)
 
-	-- Update world map positioning
-
-	camX = math.max(math.min(Characters.ID["player"].xPos / tileSize, worldWidth - screenWidthTileNum), 1)
-	camY = math.max(math.min(Characters.ID["player"].yPos / tileSize, worldHeight - screenHeightTileNum), 1)
+	-- Clamp coordinates to prevent index error
+	camX = math.max(math.min(camX, worldWidth - screenWidthTileNum), 1)
+	camY = math.max(math.min(camY, worldHeight - screenHeightTileNum), 1)
 
 	-- only update if we actually moved
-	if math.floor(camX) ~= math.floor(oldX) or math.floor(camY) ~= math.floor(oldY) then
-		updateTilesetBatch()
+	if camX ~= oldX or camY ~= oldY then
+		updateWorldTiles(camX, camY)
 	end
+
+	oldX = camX
+	oldY = camY
 
 end
 
--- Render world
-function World.draw(scale)
+-- Render world offset for smooth scrolling
+function World.draw(camX, camY, scale)
 	love.graphics.draw(tilesetBatch, 
-		math.floor(-scale*(camX%1)*tileSize), math.floor(-scale*(camY%1)*tileSize),
+		math.floor(-scale * (camX % tileSize)), math.floor(-scale * (camY % tileSize)),
 		0, scale, scale)
 end
 
--- Move world
-function shiftWorld(dx, dy)
-
-	local oldX = camX
-	local oldY = camY
-
-	camX = math.max(math.min(camX + dx, worldWidth - screenWidthTileNum), 1)
-	camY = math.max(math.min(camY + dy, worldHeight - screenHeightTileNum), 1)
-
-	-- only update if we actually moved
-	if math.floor(camX) ~= math.floor(oldX) or math.floor(camY) ~= math.floor(oldY) then
-		updateTilesetBatch()
-	end
-
-end
-
 -- Re-define sprite batch based on what is visible
-function updateTilesetBatch()
+function updateWorldTiles(screenTileX, screenTileY)
 
 	local xCoord, yCoord
 
 	tilesetBatch:clear()
 	for xCoord = 0, screenWidthTileNum - 1 do
 		for yCoord = 0, screenHeightTileNum - 1 do
-			tilesetBatch:add(mapQuads[World.map[xCoord + math.floor(camX)][yCoord + math.floor(camY)]],
+			tilesetBatch:add(mapQuads[World.map[xCoord + screenTileX][yCoord + screenTileY]],
 				xCoord * tileSize, yCoord * tileSize)
 		end
 	end

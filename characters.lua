@@ -4,7 +4,7 @@ local Characters = {
 }
 
 local spriteSheet
-local speedScale = 2
+local speedScale = 1
 local animScale = 0.01
 
 function Characters.initialize()
@@ -14,11 +14,11 @@ function Characters.initialize()
 	spriteSheet:setFilter("nearest", "nearest")
 
 	-- Create player character
-	Characters.ID["player"] = Characters:new("player", 0, 16, 32, 100)
+	Characters.ID["player"] = Characters:new("player", 16, 2, 1, 2, 100)
 
 end
 
-function Characters:new(name, type, width, height, speed)
+function Characters:new(name, tileSize, spriteIndex, width, height, speed)
 
 	-- Create new object
 	char = {}
@@ -29,6 +29,9 @@ function Characters:new(name, type, width, height, speed)
 
 	-- Initialize attributes
 	char.name = name			-- Name of character
+	char.height = height		-- Character height, in number of tiles
+	char.width = width			-- Character width, in number of tiles
+	char.spriteSize = tileSize	-- Pixel count of one tile for character drawing
 	char.direction = "down"		-- Orientation character is facing
 	char.state = "idle"			-- Current character action
 	char.xPos = 100				-- Character X-coordinate
@@ -41,14 +44,14 @@ function Characters:new(name, type, width, height, speed)
 	char.animationSet["idle"] = {}
 	char.animationSet["moving"] = {}
 
-	char.animationSet["idle"]["down"]= newAnimation(spriteSheet, width, height, type, {0}, 1)
-	char.animationSet["idle"]["up"] = newAnimation(spriteSheet, width, height, type, {3}, 1)
-	char.animationSet["idle"]["left"] = newAnimation(spriteSheet, width, height, type, {6}, 1)
-	char.animationSet["idle"]["right"] = newAnimation(spriteSheet, width, height, type, {9}, 1)
-	char.animationSet["moving"]["down"]= newAnimation(spriteSheet, width, height, type, {1, 0, 2, 0}, speed * animScale)
-	char.animationSet["moving"]["up"] = newAnimation(spriteSheet, width, height, type, {4, 3, 5, 3}, speed * animScale)
-	char.animationSet["moving"]["left"] = newAnimation(spriteSheet, width, height, type, {7, 6, 8, 6}, speed * animScale)
-	char.animationSet["moving"]["right"] = newAnimation(spriteSheet, width, height, type, {10, 9, 11, 9}, speed * animScale)
+	char.animationSet["idle"]["down"]= newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {0}, 1)
+	char.animationSet["idle"]["up"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {3}, 1)
+	char.animationSet["idle"]["left"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {6}, 1)
+	char.animationSet["idle"]["right"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {9}, 1)
+	char.animationSet["moving"]["down"]= newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {1, 0, 2, 0}, speed * animScale)
+	char.animationSet["moving"]["up"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {4, 3, 5, 3}, speed * animScale)
+	char.animationSet["moving"]["left"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {7, 6, 8, 6}, speed * animScale)
+	char.animationSet["moving"]["right"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {10, 9, 11, 9}, speed * animScale)
 
 	-- Assign current animation set
 	char.anim = char.animationSet["idle"]["down"]
@@ -112,7 +115,7 @@ function Characters:move(dt, direction)
 
 end
 
-function Characters.draw(scale)
+function Characters.draw(camX, camY, scale)
 
 	local spriteNum
 
@@ -122,7 +125,12 @@ function Characters.draw(scale)
 		-- Determine frame in animation to display
 		spriteNum = math.floor(Characters.ID[name].anim.currentTime / Characters.ID[name].anim.duration * #Characters.ID[name].anim.quads) + 1
 		-- Draw selected frame
-		love.graphics.draw(spriteSheet, Characters.ID[name].anim.quads[spriteNum], Characters.ID[name].xPos, Characters.ID[name].yPos, 0, scale, scale)
+		love.graphics.draw(spriteSheet, Characters.ID[name].anim.quads[spriteNum],
+							Characters.ID[name].xPos - camX, 
+							Characters.ID[name].yPos - camY,
+							 0, scale, scale,
+							(Characters.ID[name].width * Characters.ID[name].spriteSize / 2),
+							(Characters.ID[name].height * Characters.ID[name].spriteSize / 2))
 
 	end
 
