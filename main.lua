@@ -4,7 +4,7 @@ local Camera = require("camera")
 local Characters = require("characters")
 local World = require("world")
 
-local scale = 3
+local scale = 1
 
 -- PRIMARY FUNCTIONS
 

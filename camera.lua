@@ -36,19 +36,8 @@ function Camera:scale(sx, sy)
 end
 
 function Camera:setPosition(x, y)
-  self.x = x or self.x
-  self.y = y or self.y
-  print ("Width = "..World.width..", tile = "..World.tileSize..", x = "..self.x)
-  if(self.x < 0) then
-    self.x = 0
-  elseif(self.x > World.width * World.tileSize) then
-    self.x = World.width * World.tileSize
-  end
-  if(self.y < 0) then
-    self.y = 0
-  elseif(self.y > World.height * World.tileSize) then
-    self.y = World.height * World.tileSize
-  end
+  self.x = x < 0 and 0 or (x > (World.width - World.displayWidth) * World.tileSize and (World.width - World.displayWidth + 1) * World.tileSize or x)
+  self.y = y < 0 and 0 or (y > (World.height - World.displayHeight) * World.tileSize and (World.height - World.displayHeight + 1) * World.tileSize or y)
 end
 
 function Camera:setScale(sx, sy)
