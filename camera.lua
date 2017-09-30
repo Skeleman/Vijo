@@ -7,7 +7,7 @@ Camera = {
   mode = "followPlayer"
 }
 
-require("world")
+local World = require("world")
 
 function Camera:set()   
   love.graphics.push()
@@ -38,15 +38,16 @@ end
 function Camera:setPosition(x, y)
   self.x = x or self.x
   self.y = y or self.y
+  print ("Width = "..World.width..", tile = "..World.tileSize..", x = "..self.x)
   if(self.x < 0) then
     self.x = 0
-  elseif(self.x > 500) then
-    self.x = 500
+  elseif(self.x > World.width * World.tileSize) then
+    self.x = World.width * World.tileSize
   end
   if(self.y < 0) then
     self.y = 0
-  elseif(self.y > 200) then
-    self.y = 200
+  elseif(self.y > World.height * World.tileSize) then
+    self.y = World.height * World.tileSize
   end
 end
 

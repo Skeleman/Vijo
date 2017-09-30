@@ -1,5 +1,7 @@
 local World = {
-	map = {}
+	map = {},
+	width, height,
+	tileSize
 }
 
 local Characters = require("characters")
@@ -8,7 +10,6 @@ local Characters = require("characters")
 local tileSize = 16
 
 -- Initialized when loaded
-local worldWidth, worldHeight
 local screenWidthTileNum, screenHeightTileNum
 local tilesetBatch
 local mapQuads = {}
@@ -27,20 +28,21 @@ function World.load(worldName, scale)
 	World.updateDimension(scale)
 
 	-- Load map parameters FIXME: Determine from map file
-	worldWidth = Map.width
-	worldHeight = Map.height
+	World.width = Map.width
+	World.height = Map.height
+	World.tileSize = Map.tilesets[1].tilewidth
 
 	-- Load map coordinate information
-	for xCoord = 1, worldWidth do
+	for xCoord = 1, World.width do
 		World.map[xCoord] = {}
-		for yCoord = 1, worldHeight do
-			World.map[xCoord][yCoord] = Map.layers[1].data[xCoord + (worldWidth * (yCoord - 1))] - 1
+		for yCoord = 1, World.height do
+			World.map[xCoord][yCoord] = Map.layers[1].data[xCoord + (World.width * (yCoord - 1))] - 1
 		end
 	end
 
 	print ("Loading tileset...")
 	-- Load map textures
-	setupTileset(Map.tilesets[1].image, Map.tilesets[1].imagewidth / Map.tilesets[1].tilewidth, Map.tilesets[1].imageheight / Map.tilesets[1].tileheight) -- FIXME: Account for directory changes
+	setupTileset(Map.tilesets[1].image, Map.tilesets[1].imagewidth / World.tileSize, Map.tilesets[1].imageheight / World.tileSize) -- FIXME: Account for directory changes
 
 end
 
@@ -79,14 +81,14 @@ function setupTileset(name, tileXCount, tileYCount)
 end
 
 -- Update what portion of the world is graphically defined
-function World.update(camX, camY)
+function World.update(camX, camY, scale)
 
-	camX = math.ceil(camX / tileSize)
-	camY = math.ceil(camY / tileSize)
+	camX = math.ceil(camX / tileSize / scale)
+	camY = math.ceil(camY / tileSize / scale)
 
 	-- Clamp coordinates to prevent index error
-	camX = math.max(math.min(camX, worldWidth - screenWidthTileNum), 1)
-	camY = math.max(math.min(camY, worldHeight - screenHeightTileNum), 1)
+	camX = math.max(math.min(camX, World.width - screenWidthTileNum), 1)
+	camY = math.max(math.min(camY, World.height - screenHeightTileNum), 1)
 
 	-- only update if we actually moved
 	if camX ~= oldX or camY ~= oldY then
@@ -101,7 +103,7 @@ end
 -- Render world offset for smooth scrolling
 function World.draw(camX, camY, scale)
 	love.graphics.draw(tilesetBatch, 
-		math.floor(-scale * (camX % tileSize)), math.floor(-scale * (camY % tileSize)),
+		math.floor(-scale * ((camX / scale) % tileSize)), math.floor(-scale * ((camY / scale) % tileSize)),
 		0, scale, scale)
 end
 

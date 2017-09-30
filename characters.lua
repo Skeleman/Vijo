@@ -4,7 +4,7 @@ local Characters = {
 }
 
 local spriteSheet
-local speedScale = 1
+local speedScale = 2
 local animScale = 0.01
 
 function Characters.initialize()

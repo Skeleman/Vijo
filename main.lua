@@ -25,7 +25,7 @@ function love.update(dt)
 	if(Camera.mode == "followPlayer") then
 		Camera:setPosition(Characters.ID["player"].xPos - (love.graphics.getWidth() / 2), Characters.ID["player"].yPos - (love.graphics.getHeight() / 2))
 	end
-	World.update(Camera.x, Camera.y)
+	World.update(Camera.x, Camera.y, scale)
 
 end
 
@@ -93,10 +93,6 @@ function love.keypressed(key)
 		Characters.ID["player"].direction = key
 		Characters.ID["player"].state = "moving"
 		Characters.ID["player"]:nextAnimation(true)
-
-		print("Character X = "..Characters.ID["player"].xPos..", Character Y = "..Characters.ID["player"].yPos)
-		print("Camera X = "..Camera.x..", Camera Y = "..Camera.y)
-		print()
 
 	end
 end
