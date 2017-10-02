@@ -4,7 +4,7 @@ local Camera = require("camera")
 local Characters = require("characters")
 local World = require("world")
 
-local scale = 1
+local scale = 2
 
 -- PRIMARY FUNCTIONS
 
@@ -35,10 +35,10 @@ function love.draw()
 	Camera:setScale(scale, scale)
 	Camera:set()
 
-	-- drawBackground()
-	World.draw(Camera.x, Camera.y)
-	-- drawDetails()
+	-- World.drawBackground(Camera.x, Camera.y)
+	World.drawMap(Camera.x, Camera.y)
 	Characters.draw(Camera.x, Camera.y)
+	World.drawObjects(Camera.x, Camera.y)
 
 	Camera:unset()
 
@@ -100,6 +100,19 @@ function love.keypressed(key)
 		Characters.ID["player"]:nextAnimation(true)
 
 	end
+
+	-- Debug
+	if key == "1" then
+		Characters.ID["player"]:setSprite(1, 2, 0)
+		Characters.ID["player"]:nextAnimation()
+	elseif key == "2" then
+		Characters.ID["player"]:setSprite(1, 2, 1)
+		Characters.ID["player"]:nextAnimation()
+	elseif key == "3" then
+		Characters.ID["player"]:setSprite(1, 2, 2)
+		Characters.ID["player"]:nextAnimation()
+	end
+
 end
 
 -- Process key release

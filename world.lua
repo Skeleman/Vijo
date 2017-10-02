@@ -1,5 +1,5 @@
 local World = {
-	map = {},
+	mapData = {},
 	width, height,
 	displayWidth, displayHeight,
 	tileSize
@@ -8,8 +8,10 @@ local World = {
 local Characters = require("characters")
 
 -- Initialized when loaded
-local baseLayer
+local mapLayer
+local objectLayer
 local mapQuads = {}
+local objectQuads = {}
 
 local oldX = 0
 local oldY = 0
@@ -20,26 +22,35 @@ function World.load(worldName, scale)
 	local yCoord
 
 	print ("Loading world and parameters...")
-	local Map = require (worldName)	-- FIXME: find way to load file from subdirectory, or write means of paring other file type
+	local MapFile = require (worldName)	-- FIXME: find way to load file from subdirectory, or write means of paring other file type
 
-	-- Load map parameters FIXME: Determine from map file
-	World.width = Map.width
-	World.height = Map.height
-	World.tileSize = Map.tilesets[1].tilewidth
+	-- Load map parameters
+	World.width = MapFile.width
+	World.height = MapFile.height
+	World.tileSize = MapFile.tilesets[1].tilewidth	-- Fixme: choose tileset based on tileset name
 
 	World.updateDimension(scale)
 
 	-- Load map coordinate information
-	for xCoord = 1, World.width do
-		World.map[xCoord] = {}
-		for yCoord = 1, World.height do
-			World.map[xCoord][yCoord] = Map.layers[1].data[xCoord + (World.width * (yCoord - 1))] - 1
+	for xCoord = 0, World.width - 1 do
+		World[xCoord] = {}
+		for yCoord = 0, World.height - 1 do
+			World[xCoord][yCoord] = {}
+			World[xCoord][yCoord].map = MapFile.layers[1].data[xCoord + (World.width * (yCoord)) + 1] - 1	-- FIXME: Select layers based on name
+			World[xCoord][yCoord].object = ((MapFile.layers[2].data[xCoord + (World.width * (yCoord)) + 1]) ~= 0) or nil
+			print 
+			World[xCoord][yCoord].collision = ((MapFile.layers[3].data[xCoord + (World.width * (yCoord)) + 1]) ~= 0) or nil
 		end
 	end
 
 	print ("Loading tileset...")
 	-- Load map textures
-	setupTileset(Map.tilesets[1].image, Map.tilesets[1].imagewidth / World.tileSize, Map.tilesets[1].imageheight / World.tileSize) -- FIXME: Account for directory changes
+	setupTileset(MapFile.tilesets[1].image, MapFile.tilesets[1].imagewidth / World.tileSize, MapFile.tilesets[1].imageheight / World.tileSize)
+	-- Load object textures
+	setupTileset(MapFile.tilesets[1].image, MapFile.tilesets[1].imagewidth / World.tileSize, MapFile.tilesets[1].imageheight / World.tileSize)
+
+	-- Done using mapfile data; use only custom structures from here
+	MapFile = nil
 
 end
 
@@ -64,41 +75,49 @@ function setupTileset(name, tileXCount, tileYCount)
 	for tileXIndex = 0, tileXCount - 1 do
 		for tileYIndex = 0, tileYCount - 1 do
 			mapQuads[quadsIndex] = love.graphics.newQuad(tileYIndex * World.tileSize, tileXIndex * World.tileSize, World.tileSize, World.tileSize, imageWidth, imageHeight)
+			objectQuads[quadsIndex] = love.graphics.newQuad(tileYIndex * World.tileSize, tileXIndex * World.tileSize, World.tileSize, World.tileSize, imageWidth, imageHeight)
 			quadsIndex = quadsIndex + 1
 		end
 	end
 
 	-- Load tileset
-	baseLayer = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
+	mapLayer = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
+	objectLayer = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
 
 	-- Initialize
-	updateWorldTiles(1, 1)
+	updateWorldTiles(0, 0)
 
 end
 
 -- Update what portion of the world is graphically defined
 function World.update(camX, camY)
 
-	camX = math.ceil(camX / World.tileSize)
-	camY = math.ceil(camY / World.tileSize)
+	-- Convert camera coordinates into world tile coordinates
+	camX = math.floor(camX / World.tileSize)
+	camY = math.floor(camY / World.tileSize)
 
 	-- Clamp coordinates to prevent index error
-	camX = math.max(math.min(camX, World.width - World.displayWidth + 1), 1)
-	camY = math.max(math.min(camY, World.height - World.displayHeight + 1), 1)
+	camX = math.max(math.min(camX, World.width - World.displayWidth), 0)
+	camY = math.max(math.min(camY, World.height - World.displayHeight), 0)
 
-	-- only update if we actually moved
+	-- Only update if we actually moved
 	if camX ~= oldX or camY ~= oldY then
 		updateWorldTiles(camX, camY)
 	end
 
+	-- Track old values to limit update rate
 	oldX = camX
 	oldY = camY
 
 end
 
 -- Render world, with offset for smooth scrolling
-function World.draw(camX, camY)
-	love.graphics.draw(baseLayer, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
+function World.drawMap(camX, camY)
+	 love.graphics.draw(mapLayer, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
+end
+
+function World.drawObjects(camX, camY)
+	love.graphics.draw(objectLayer, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
 end
 
 -- Re-define sprite batch based on what is visible
@@ -106,14 +125,24 @@ function updateWorldTiles(screenTileX, screenTileY)
 
 	local xCoord, yCoord
 
-	baseLayer:clear()
+	-- Rebuild array of visible world tiles
+	mapLayer:clear()
+	objectLayer:clear()
 	for xCoord = 0, World.displayWidth - 1 do
 		for yCoord = 0, World.displayHeight - 1 do
-			baseLayer:add(mapQuads[World.map[xCoord + screenTileX][yCoord + screenTileY]],
-				xCoord * World.tileSize, yCoord * World.tileSize)
+			mapLayer:add(mapQuads[World[xCoord + screenTileX][yCoord + screenTileY].map],
+						  xCoord * World.tileSize, yCoord * World.tileSize)
+			if (World[xCoord + screenTileX][yCoord + screenTileY].objects) then
+				objectLayer:add(objectQuads[World[xCoord + screenTileX][yCoord + screenTileY].objects],
+							  xCoord * World.tileSize, yCoord * World.tileSize)
+				print("There's a thing")
+			end
 		end
 	end
-	baseLayer:flush()
+
+	-- Send new data to graphics card ASAP
+	mapLayer:flush()
+	objectLayer:flush()
 
 end
 

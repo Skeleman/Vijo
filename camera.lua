@@ -48,8 +48,8 @@ end
 function Camera:follow(x, y)
   x = x - love.graphics.getWidth() / 2 / self.scaleX
   y = y - love.graphics.getHeight() / 2 / self.scaleY
-  self.x = x < 0 and 0 or (x > (World.width - World.displayWidth) * World.tileSize and (World.width - World.displayWidth + 1) * World.tileSize or x)
-  self.y = y < 0 and 0 or (y > (World.height - World.displayHeight) * World.tileSize and (World.height - World.displayHeight + 1) * World.tileSize or y)
+  self.x = x < 0 and 0 or (x > (World.width - World.displayWidth) * World.tileSize and (World.width - World.displayWidth) * World.tileSize or x)
+  self.y = y < 0 and 0 or (y > (World.height - World.displayHeight) * World.tileSize and (World.height - World.displayHeight) * World.tileSize or y)
   
 end
 
