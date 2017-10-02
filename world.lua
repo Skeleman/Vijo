@@ -36,10 +36,9 @@ function World.load(worldName, scale)
 		World[xCoord] = {}
 		for yCoord = 0, World.height - 1 do
 			World[xCoord][yCoord] = {}
-			World[xCoord][yCoord].map = MapFile.layers[1].data[xCoord + (World.width * (yCoord)) + 1] - 1	-- FIXME: Select layers based on name
-			World[xCoord][yCoord].object = ((MapFile.layers[2].data[xCoord + (World.width * (yCoord)) + 1]) ~= 0) or nil
-			print 
-			World[xCoord][yCoord].collision = ((MapFile.layers[3].data[xCoord + (World.width * (yCoord)) + 1]) ~= 0) or nil
+			World[xCoord][yCoord].map = parseMapValue(MapFile.layers[1].data[xCoord + (World.width * (yCoord)) + 1])	-- FIXME: Select layers and offsets based on name
+			World[xCoord][yCoord].object = parseMapValue(MapFile.layers[2].data[xCoord + (World.width * (yCoord)) + 1], 4096)  -- FIXME: Adjust offset methodology. Force tileset per layer.
+			World[xCoord][yCoord].collision = parseMapValue(MapFile.layers[3].data[xCoord + (World.width * (yCoord)) + 1])
 		end
 	end
 
@@ -47,7 +46,7 @@ function World.load(worldName, scale)
 	-- Load map textures
 	setupTileset(MapFile.tilesets[1].image, MapFile.tilesets[1].imagewidth / World.tileSize, MapFile.tilesets[1].imageheight / World.tileSize)
 	-- Load object textures
-	setupTileset(MapFile.tilesets[1].image, MapFile.tilesets[1].imagewidth / World.tileSize, MapFile.tilesets[1].imageheight / World.tileSize)
+--	setupTileset(MapFile.tilesets[1].image, MapFile.tilesets[1].imagewidth / World.tileSize, MapFile.tilesets[1].imageheight / World.tileSize)
 
 	-- Done using mapfile data; use only custom structures from here
 	MapFile = nil
@@ -130,12 +129,11 @@ function updateWorldTiles(screenTileX, screenTileY)
 	objectLayer:clear()
 	for xCoord = 0, World.displayWidth - 1 do
 		for yCoord = 0, World.displayHeight - 1 do
-			mapLayer:add(mapQuads[World[xCoord + screenTileX][yCoord + screenTileY].map],
+			mapLayer:add(mapQuads[World[xCoord + screenTileX][yCoord + screenTileY].map - 1],
 						  xCoord * World.tileSize, yCoord * World.tileSize)
-			if (World[xCoord + screenTileX][yCoord + screenTileY].objects) then
-				objectLayer:add(objectQuads[World[xCoord + screenTileX][yCoord + screenTileY].objects],
+			if (World[xCoord + screenTileX][yCoord + screenTileY].object) then
+				objectLayer:add(objectQuads[World[xCoord + screenTileX][yCoord + screenTileY].object - 1],
 							  xCoord * World.tileSize, yCoord * World.tileSize)
-				print("There's a thing")
 			end
 		end
 	end
@@ -143,6 +141,20 @@ function updateWorldTiles(screenTileX, screenTileY)
 	-- Send new data to graphics card ASAP
 	mapLayer:flush()
 	objectLayer:flush()
+
+end
+
+-- Convert map zeros to nil to save RAM and processing time
+function parseMapValue(mapValue, offset)
+
+	if mapValue == 0 then
+		mapValue = nil
+	else
+		offset = offset or 0
+		mapValue = mapValue - offset
+	end
+
+	return mapValue
 
 end
 
