@@ -37,7 +37,7 @@ function Characters:new(name, spriteIndex, width, height, speed)
 	char.spriteSize = tileSize	-- Pixel count of one tile for character drawing
 	char.direction = "down"		-- Orientation character is facing
 	char.state = "idle"			-- Current character action
-	char.xPos = 1200				-- Character X-coordinate
+	char.xPos = 1200			-- Character X-coordinate
 	char.yPos = 700				-- Character Y-coordinate
 	char.speed = speed			-- Character movement speed
 	char.anim = {}				-- Animation representing character

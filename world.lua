@@ -1,5 +1,4 @@
 local World = {
-	mapData = {},
 	width, height,
 	displayWidth, displayHeight,
 	tileSize
@@ -8,83 +7,104 @@ local World = {
 local Characters = require("characters")
 
 -- Initialized when loaded
-local mapLayer
-local objectLayer
-local mapQuads = {}
-local objectQuads = {}
+local layers = {}
+local quads = {}
 
 local oldX = 0
 local oldY = 0
 
 function World.load(worldName, scale)
 
-	local xCoord
-	local yCoord
+	local tileInits = {}
 
-	print ("Loading world and parameters...")
+	-- Load map file
+	print ("Loading '"..worldName..".lua'...")
 	local MapFile = require (worldName)	-- FIXME: find way to load file from subdirectory, or write means of paring other file type
 
 	-- Load map parameters
 	World.width = MapFile.width
 	World.height = MapFile.height
-	World.tileSize = MapFile.tilesets[1].tilewidth	-- Fixme: choose tileset based on tileset name
-
+	World.tileSize = MapFile.tilewidth
 	World.updateDimension(scale)
 
-	-- Load map coordinate information
-	for xCoord = 0, World.width - 1 do
-		World[xCoord] = {}
-		for yCoord = 0, World.height - 1 do
-			World[xCoord][yCoord] = {}
-			World[xCoord][yCoord].map = parseMapValue(MapFile.layers[1].data[xCoord + (World.width * (yCoord)) + 1])	-- FIXME: Select layers and offsets based on name
-			World[xCoord][yCoord].object = parseMapValue(MapFile.layers[2].data[xCoord + (World.width * (yCoord)) + 1], 4096)  -- FIXME: Adjust offset methodology. Force tileset per layer.
-			World[xCoord][yCoord].collision = parseMapValue(MapFile.layers[3].data[xCoord + (World.width * (yCoord)) + 1])
+	-- Load tilesets used by map FIXME: Properly link names of textures so only layer names need be hardcoded
+	print ("Loading world textures...")
+	local mapIndex
+	local useTileset
+	for mapIndex in pairs(MapFile.tilesets) do
+		tileInits[MapFile.tilesets[mapIndex].name] = MapFile.tilesets[mapIndex].firstgid
+
+		useTileset = tilesetValid(MapFile.tilesets[mapIndex].name)
+
+		if (useTileset == true) then
+			setupTileset(MapFile.tilesets[mapIndex])
 		end
 	end
 
-	print ("Loading tileset...")
-	-- Load map textures
-	setupTileset(MapFile.tilesets[1].image, MapFile.tilesets[1].imagewidth / World.tileSize, MapFile.tilesets[1].imageheight / World.tileSize)
-	-- Load object textures
---	setupTileset(MapFile.tilesets[1].image, MapFile.tilesets[1].imagewidth / World.tileSize, MapFile.tilesets[1].imageheight / World.tileSize)
+	-- Load map coordinate information
+	print ("Loading world information...")
+	local xCoord
+	local yCoord
+	for mapIndex in pairs(MapFile.layers) do
+		-- Load tile layers
+		if (MapFile.layers[mapIndex].type == "tilelayer") then
+			for xCoord = 0, World.width - 1 do
+				World[xCoord] = {}
+
+				for yCoord = 0, World.height - 1 do
+					World[xCoord][yCoord] = {}
+					World[xCoord][yCoord][MapFile.layers[mapIndex].name] = parseMapValue(MapFile.layers[mapIndex].data[xCoord + (World.width * (yCoord)) + 1],
+																						tileInits[MapFile.layers[mapIndex].properties.Tileset] - 1)
+				end
+			end
+		end
+	end
 
 	-- Done using mapfile data; use only custom structures from here
 	MapFile = nil
 
+	-- Initialize world tiles
+	print ("Initializing world...")
+	updateWorldTiles(0, 0)
+
 end
 
 function World.updateDimension(scale)
+
 	World.displayWidth = math.ceil(love.graphics.getWidth() / World.tileSize / scale) + 1
 	World.displayHeight =  math.ceil(love.graphics.getHeight() / World.tileSize / scale) + 1
+
 end
 
-function setupTileset(name, tileXCount, tileYCount)
+-- Loads set of sprites for tileset and quad tiles to draw on-screen
+function setupTileset(tileset)
+
+	print ("Loading textures for "..tileset.name.." layer")
 
 	local tilesetImage
-	local imageWidth, imageHeight
 	local tileXIndex, tileYIndex
 	local quadsIndex = 0
 
-	tilesetImage = love.graphics.newImage("Assets/tileset.png")
+	tilesetImage = love.graphics.newImage(tileset.image)
 	tilesetImage:setFilter("nearest", "nearest") -- force no filtering for pixelated look
 
-	imageWidth = tilesetImage:getWidth()
-	imageHeight = tilesetImage:getHeight()
+	print(tileset.imagewidth)
+	print(tileset.tilewidth)
+	print(tileset.imageheight)
+	print(tileset.tileheight)
 
-	for tileXIndex = 0, tileXCount - 1 do
-		for tileYIndex = 0, tileYCount - 1 do
-			mapQuads[quadsIndex] = love.graphics.newQuad(tileYIndex * World.tileSize, tileXIndex * World.tileSize, World.tileSize, World.tileSize, imageWidth, imageHeight)
-			objectQuads[quadsIndex] = love.graphics.newQuad(tileYIndex * World.tileSize, tileXIndex * World.tileSize, World.tileSize, World.tileSize, imageWidth, imageHeight)
+	quads[tileset.name] = {}
+
+	for tileXIndex = 0, (tileset.imagewidth / tileset.tilewidth) - 1 do
+		for tileYIndex = 0, (tileset.imageheight / tileset.tileheight) - 1 do
+			quads[tileset.name][quadsIndex] = love.graphics.newQuad(tileXIndex * tileset.tilewidth, tileYIndex * tileset.tileheight, 
+																	tileset.tilewidth, tileset.tileheight, tileset.imagewidth, tileset.imageheight)
 			quadsIndex = quadsIndex + 1
 		end
 	end
 
 	-- Load tileset
-	mapLayer = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
-	objectLayer = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
-
-	-- Initialize
-	updateWorldTiles(0, 0)
+	layers[tileset.name] = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
 
 end
 
@@ -112,11 +132,11 @@ end
 
 -- Render world, with offset for smooth scrolling
 function World.drawMap(camX, camY)
-	 love.graphics.draw(mapLayer, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
+	 love.graphics.draw(layers["Base"], camX - (camX % World.tileSize), camY - (camY % World.tileSize))
 end
 
 function World.drawObjects(camX, camY)
-	love.graphics.draw(objectLayer, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
+	love.graphics.draw(layers["Objects"], camX - (camX % World.tileSize), camY - (camY % World.tileSize))
 end
 
 -- Re-define sprite batch based on what is visible
@@ -125,22 +145,31 @@ function updateWorldTiles(screenTileX, screenTileY)
 	local xCoord, yCoord
 
 	-- Rebuild array of visible world tiles
-	mapLayer:clear()
-	objectLayer:clear()
+	layers["Base"]:clear()
+	layers["Objects"]:clear()
 	for xCoord = 0, World.displayWidth - 1 do
 		for yCoord = 0, World.displayHeight - 1 do
-			mapLayer:add(mapQuads[World[xCoord + screenTileX][yCoord + screenTileY].map - 1],
+			print(quads["Base"])
+			print(xCoord)
+			print(screenTileX)
+			print(yCoord)
+			print(screenTileY)
+			print(World[xCoord + screenTileX][yCoord + screenTileY]["Base"])
+			print(layers["Base"])
+			print("")
+			layers["Base"]:add(quads["Base"][World[xCoord + screenTileX][yCoord + screenTileY]["Base"] - 1],
 						  xCoord * World.tileSize, yCoord * World.tileSize)
+			-- Add objects, if they exist; FIXME: split layer based on collision
 			if (World[xCoord + screenTileX][yCoord + screenTileY].object) then
-				objectLayer:add(objectQuads[World[xCoord + screenTileX][yCoord + screenTileY].object - 1],
+				layers["Objects"]:add(quads["Objects"][World[xCoord + screenTileX][yCoord + screenTileY]["Objects"] - 1],
 							  xCoord * World.tileSize, yCoord * World.tileSize)
 			end
 		end
 	end
 
 	-- Send new data to graphics card ASAP
-	mapLayer:flush()
-	objectLayer:flush()
+	layers["Base"]:flush()
+	layers["Objects"]:flush()
 
 end
 
@@ -155,6 +184,23 @@ function parseMapValue(mapValue, offset)
 	end
 
 	return mapValue
+
+end
+
+-- Determine whether tileset being analyzed has image data that needn't be loaded
+function tilesetValid(tilesetName)
+
+	local noTex = {"Collision", "Icons"}
+	local compareIndex
+	local validName = true
+
+	for compareIndex in pairs(noTex) do
+		if tilesetName == noTex[compareIndex] then
+			validName = false
+		end
+	end
+
+	return validName
 
 end
 
