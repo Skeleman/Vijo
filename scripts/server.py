@@ -13,6 +13,7 @@ DEFAULT_HEADERS = {
 
 class VijoHandler(BaseHTTPRequestHandler):
 	def do_GET(self):
+		print "Received GET request"
 		self._emptyOK()
 
 	def do_POST(self):

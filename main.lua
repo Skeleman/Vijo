@@ -112,6 +112,8 @@ function love.keypressed(key)
 	elseif key == "3" then
 		Characters.ID["player"]:setSprite(1, 2, 2)
 		Characters.ID["player"]:nextAnimation()
+	elseif key == "x" then
+		Network:testRequest()
 	end
 
 end
