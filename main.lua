@@ -3,6 +3,7 @@
 local Camera = require("camera")
 local Characters = require("characters")
 local World = require("world")
+local Network = require("network.network")
 
 local scale = 2
 
