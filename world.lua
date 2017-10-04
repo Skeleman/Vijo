@@ -45,18 +45,28 @@ function World.load(worldName, scale)
 	print ("Loading world information...")
 	local xCoord
 	local yCoord
+	-- Prepare world grid
+	for xCoord = 0, World.width - 1 do
+		World[xCoord] = {}
+		for yCoord = 0, World.height - 1 do
+			World[xCoord][yCoord] = {}
+		end
+	end
+	-- Load world data
 	for mapIndex in pairs(MapFile.layers) do
+
 		-- Load tile layers
 		if (MapFile.layers[mapIndex].type == "tilelayer") then
 			for xCoord = 0, World.width - 1 do
-				World[xCoord] = {}
-
 				for yCoord = 0, World.height - 1 do
-					World[xCoord][yCoord] = {}
 					World[xCoord][yCoord][MapFile.layers[mapIndex].name] = parseMapValue(MapFile.layers[mapIndex].data[xCoord + (World.width * (yCoord)) + 1],
 																						tileInits[MapFile.layers[mapIndex].properties.Tileset] - 1)
 				end
 			end
+		end
+
+		-- Load object layers
+		if (MapFile.layers[mapIndex].type == "objectlayer") then
 		end
 	end
 
@@ -88,16 +98,11 @@ function setupTileset(tileset)
 	tilesetImage = love.graphics.newImage(tileset.image)
 	tilesetImage:setFilter("nearest", "nearest") -- force no filtering for pixelated look
 
-	print(tileset.imagewidth)
-	print(tileset.tilewidth)
-	print(tileset.imageheight)
-	print(tileset.tileheight)
-
 	quads[tileset.name] = {}
 
 	for tileXIndex = 0, (tileset.imagewidth / tileset.tilewidth) - 1 do
 		for tileYIndex = 0, (tileset.imageheight / tileset.tileheight) - 1 do
-			quads[tileset.name][quadsIndex] = love.graphics.newQuad(tileXIndex * tileset.tilewidth, tileYIndex * tileset.tileheight, 
+			quads[tileset.name][quadsIndex] = love.graphics.newQuad(tileYIndex * tileset.tilewidth, tileXIndex * tileset.tileheight, 
 																	tileset.tilewidth, tileset.tileheight, tileset.imagewidth, tileset.imageheight)
 			quadsIndex = quadsIndex + 1
 		end
@@ -149,18 +154,10 @@ function updateWorldTiles(screenTileX, screenTileY)
 	layers["Objects"]:clear()
 	for xCoord = 0, World.displayWidth - 1 do
 		for yCoord = 0, World.displayHeight - 1 do
-			print(quads["Base"])
-			print(xCoord)
-			print(screenTileX)
-			print(yCoord)
-			print(screenTileY)
-			print(World[xCoord + screenTileX][yCoord + screenTileY]["Base"])
-			print(layers["Base"])
-			print("")
 			layers["Base"]:add(quads["Base"][World[xCoord + screenTileX][yCoord + screenTileY]["Base"] - 1],
 						  xCoord * World.tileSize, yCoord * World.tileSize)
 			-- Add objects, if they exist; FIXME: split layer based on collision
-			if (World[xCoord + screenTileX][yCoord + screenTileY].object) then
+			if (World[xCoord + screenTileX][yCoord + screenTileY]["Objects"]) then
 				layers["Objects"]:add(quads["Objects"][World[xCoord + screenTileX][yCoord + screenTileY]["Objects"] - 1],
 							  xCoord * World.tileSize, yCoord * World.tileSize)
 			end
