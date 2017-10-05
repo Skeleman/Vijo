@@ -8,12 +8,17 @@ local Characters = require("characters")
 
 -- Initialized when loaded
 local layers = {}
-local quads = {}
 
 local oldX = 0
 local oldY = 0
 
+local zMax = 0
+
 function World.load(worldName, scale)
+
+	-- Reset world FIXME: put in logic to prevent unnecessary unloading
+	World.X = {}
+	layers = {}
 
 	local tileInits = {}
 
@@ -29,44 +34,59 @@ function World.load(worldName, scale)
 
 	-- Load tilesets used by map FIXME: Properly link names of textures so only layer names need be hardcoded
 	print ("Loading world textures...")
-	local mapIndex
-	local useTileset
-	for mapIndex in pairs(MapFile.tilesets) do
-		tileInits[MapFile.tilesets[mapIndex].name] = MapFile.tilesets[mapIndex].firstgid
-
-		useTileset = tilesetValid(MapFile.tilesets[mapIndex].name)
-
-		if (useTileset == true) then
-			setupTileset(MapFile.tilesets[mapIndex])
-		end
+	local tilesetIndex
+	local tilesetOffsets = {}
+	for tilesetIndex in pairs(MapFile.tilesets) do
+		tilesetOffsets[MapFile.tilesets[tilesetIndex].name] = setUpTileset(MapFile.tilesets[tilesetIndex])
 	end
 
 	-- Load map coordinate information
 	print ("Loading world information...")
-	local xCoord
-	local yCoord
-	-- Prepare world grid
-	for xCoord = 0, World.width - 1 do
-		World[xCoord] = {}
-		for yCoord = 0, World.height - 1 do
-			World[xCoord][yCoord] = {}
-		end
-	end
-	-- Load world data
-	for mapIndex in pairs(MapFile.layers) do
 
-		-- Load tile layers
-		if (MapFile.layers[mapIndex].type == "tilelayer") then
-			for xCoord = 0, World.width - 1 do
-				for yCoord = 0, World.height - 1 do
-					World[xCoord][yCoord][MapFile.layers[mapIndex].name] = parseMapValue(MapFile.layers[mapIndex].data[xCoord + (World.width * (yCoord)) + 1],
-																						tileInits[MapFile.layers[mapIndex].properties.Tileset] - 1)
+	local yVal
+	local zVal
+
+	zMax = 0
+
+	-- Load world data, layer by layer
+	local layerIndex
+	for layerIndex in pairs(MapFile.layers) do
+
+		-- Load tile layer info
+		if (MapFile.layers[layerIndex].type == "tilelayer") then
+			local xVal
+
+			-- Iterate over full world width
+			for xVal = 0, World.width - 1 do
+				local yVal
+
+				-- Create array of coordinates, starting with X. Do not clear.
+				if not (World[xVal]) then World[xVal] = {} end
+
+				-- Iterate over full world height
+				for yVal = 0, World.height - 1 do
+					local zVal
+
+					-- Create sub-array of Y coordinates. Do not clear.
+					if not (World[xVal][yVal]) then World[xVal][yVal] = {} end
+
+					-- Create sub-array of Z coordinates. Do not clear.
+					zVal = getElevation(MapFile.layers[layerIndex].name)
+					if not (World[xVal][yVal][zVal]) then World[xVal][yVal][zVal] = {} end
+
+					World[xVal][yVal][zVal][getLayerType(MapFile.layers[layerIndex].name)] = 
+						parseMapValue(MapFile.layers[layerIndex].data[xVal + (World.width * (yVal)) + 1],
+						tilesetOffsets[MapFile.layers[layerIndex].properties.Tileset] - 1)
+
+					-- Keep track of highest layer for given world
+					if (zVal > zMax) then zMax = zVal end
 				end
 			end
 		end
 
-		-- Load object layers
-		if (MapFile.layers[mapIndex].type == "objectlayer") then
+		-- Load object layer info
+		if (MapFile.layers[layerIndex].type == "objectlayer") then
+
 		end
 	end
 
@@ -87,29 +107,42 @@ function World.updateDimension(scale)
 end
 
 -- Loads set of sprites for tileset and quad tiles to draw on-screen
-function setupTileset(tileset)
+function setUpTileset(tileset)
 
-	print ("Loading textures for "..tileset.name.." layer")
+	-- Keep track of offset applied to each tileset
+	local tilesetOffset = tileset.firstgid
 
-	local tilesetImage
-	local tileXIndex, tileYIndex
-	local quadsIndex = 0
+	-- Filter out tilesets used only for in-editor icons
+	if tilesetValid(tileset.name) then
 
-	tilesetImage = love.graphics.newImage(tileset.image)
-	tilesetImage:setFilter("nearest", "nearest") -- force no filtering for pixelated look
+		local tilesetImage
+		local tileXIndex, tileYIndex, tileZIndex
+		local quadsIndex = 0
 
-	quads[tileset.name] = {}
+		-- Create new layer if not already created
+		if not (layers[tileset.name]) then layers[tileset.name] = {} end
 
-	for tileXIndex = 0, (tileset.imagewidth / tileset.tilewidth) - 1 do
-		for tileYIndex = 0, (tileset.imageheight / tileset.tileheight) - 1 do
-			quads[tileset.name][quadsIndex] = love.graphics.newQuad(tileYIndex * tileset.tilewidth, tileXIndex * tileset.tileheight, 
-																	tileset.tilewidth, tileset.tileheight, tileset.imagewidth, tileset.imageheight)
-			quadsIndex = quadsIndex + 1
+		print ("Loading textures for "..tileset.name.." layers")
+
+		tilesetImage = love.graphics.newImage(tileset.image)
+		tilesetImage:setFilter("nearest", "nearest") -- force no filtering for pixelated look
+
+		-- Create sprite grid to draw (FIXME: must each elevation must be drawn separately? If so, need zMax value loop for next line with elevation index)
+		layers[tileset.name].spriteSet = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
+
+		-- Split tileset into its tile pieces (only needed once per texture, so elevation is irrelevant)
+		layers[tileset.name].quads = {}
+
+		for tileXIndex = 0, (tileset.imagewidth / tileset.tilewidth) - 1 do
+			for tileYIndex = 0, (tileset.imageheight / tileset.tileheight) - 1 do
+				layers[tileset.name].quads[quadsIndex] = love.graphics.newQuad(tileYIndex * tileset.tilewidth, tileXIndex * tileset.tileheight, 
+															tileset.tilewidth, tileset.tileheight, tileset.imagewidth, tileset.imageheight)
+				quadsIndex = quadsIndex + 1
+			end
 		end
 	end
 
-	-- Load tileset
-	layers[tileset.name] = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
+	return tilesetOffset
 
 end
 
@@ -136,37 +169,39 @@ function World.update(camX, camY)
 end
 
 -- Render world, with offset for smooth scrolling
-function World.drawMap(camX, camY)
-	 love.graphics.draw(layers["Base"], camX - (camX % World.tileSize), camY - (camY % World.tileSize))
+function World.draw(camX, camY)
+	love.graphics.draw(layers["Base"].spriteSet, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
+	Characters.draw(camX, camY)
+	love.graphics.draw(layers["Objects"].spriteSet, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
 end
 
-function World.drawObjects(camX, camY)
-	love.graphics.draw(layers["Objects"], camX - (camX % World.tileSize), camY - (camY % World.tileSize))
-end
 
 -- Re-define sprite batch based on what is visible
 function updateWorldTiles(screenTileX, screenTileY)
 
-	local xCoord, yCoord
+	local xVal, yVal
+	local layerName
 
 	-- Rebuild array of visible world tiles
-	layers["Base"]:clear()
-	layers["Objects"]:clear()
-	for xCoord = 0, World.displayWidth - 1 do
-		for yCoord = 0, World.displayHeight - 1 do
-			layers["Base"]:add(quads["Base"][World[xCoord + screenTileX][yCoord + screenTileY]["Base"] - 1],
-						  xCoord * World.tileSize, yCoord * World.tileSize)
-			-- Add objects, if they exist; FIXME: split layer based on collision
-			if (World[xCoord + screenTileX][yCoord + screenTileY]["Objects"]) then
-				layers["Objects"]:add(quads["Objects"][World[xCoord + screenTileX][yCoord + screenTileY]["Objects"] - 1],
-							  xCoord * World.tileSize, yCoord * World.tileSize)
+	for layerName in pairs(layers) do
+		-- Clear array of tiles to display
+		layers[layerName].spriteSet:clear()
+
+		-- Rebuild array of tiles to display
+		for xVal = 0, World.displayWidth - 1 do
+			for yVal = 0, World.displayHeight - 1 do
+				for zVal = 1, zMax do
+					if (World[xVal + screenTileX][yVal + screenTileY][zVal][layerName]) then
+						layers[layerName].spriteSet:add(layers[layerName].quads[World[xVal + screenTileX][yVal + screenTileY][zVal][layerName] - 1],
+									  xVal * World.tileSize, yVal * World.tileSize)
+					end
+				end
 			end
 		end
-	end
 
-	-- Send new data to graphics card ASAP
-	layers["Base"]:flush()
-	layers["Objects"]:flush()
+		-- Update graphics card as soon as new sprite set is ready
+		layers[layerName].spriteSet:flush()
+	end
 
 end
 
@@ -198,6 +233,34 @@ function tilesetValid(tilesetName)
 	end
 
 	return validName
+
+end
+
+-- Determine layer type being loaded
+function getLayerType(layerName)
+
+	local validLayers = {"Base", "Objects", "Collision"}
+	local compareIndex
+	local layerType
+
+	for compareIndex in pairs(validLayers) do
+		if string.find(layerName, validLayers[compareIndex]) then
+			layerType = validLayers[compareIndex]
+		end
+	end
+
+	return layerType
+
+end
+
+
+-- Determine elevation of layer being loaded
+function getElevation(LayerName)
+
+	local start = string.find(LayerName, "_")
+	local elevation = tonumber(string.sub(LayerName, start + 1)) or 1
+
+	return elevation
 
 end
 

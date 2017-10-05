@@ -111,7 +111,7 @@ return {
   layers = {
     {
       type = "tilelayer",
-      name = "Base",
+      name = "Base_1",
       x = 0,
       y = 0,
       width = 100,
@@ -229,7 +229,7 @@ return {
     },
     {
       type = "tilelayer",
-      name = "Objects",
+      name = "Objects_1",
       x = 0,
       y = 0,
       width = 100,
@@ -347,7 +347,7 @@ return {
     },
     {
       type = "tilelayer",
-      name = "Collision",
+      name = "Collision_1",
       x = 0,
       y = 0,
       width = 100,
@@ -465,7 +465,7 @@ return {
     },
     {
       type = "objectgroup",
-      name = "Characters",
+      name = "Characters_1",
       visible = true,
       opacity = 1,
       offsetx = 0,

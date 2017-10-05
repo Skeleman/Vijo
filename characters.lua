@@ -7,11 +7,12 @@ local spriteSheet
 
 -- Game constants
 local speedScale = 1
-local animScale = 0.01
+local animScale = 150
 local tileSize = 16
 
 function Characters.initialize()
 
+	print ("Loading character images...")
 	-- Load character images
 	spriteSheet = love.graphics.newImage("Assets/characters.png")
 	spriteSheet:setFilter("nearest", "nearest")
@@ -148,10 +149,10 @@ function Characters:setSprite(width, height, spriteIndex)
 	self.animationSet["idle"]["up"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {3}, 1)
 	self.animationSet["idle"]["left"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {6}, 1)
 	self.animationSet["idle"]["right"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {9}, 1)
-	self.animationSet["moving"]["down"]= newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {1, 0, 2, 0}, self.speed * animScale)
-	self.animationSet["moving"]["up"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {4, 3, 5, 3}, self.speed * animScale)
-	self.animationSet["moving"]["left"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {7, 6, 8, 6}, self.speed * animScale)
-	self.animationSet["moving"]["right"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {10, 9, 11, 9}, self.speed * animScale)
+	self.animationSet["moving"]["down"]= newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {1, 0, 2, 0}, self.speed / animScale)
+	self.animationSet["moving"]["up"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {4, 3, 5, 3}, self.speed / animScale)
+	self.animationSet["moving"]["left"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {7, 6, 8, 6}, self.speed / animScale)
+	self.animationSet["moving"]["right"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {10, 9, 11, 9}, self.speed / animScale)
 
 end
 

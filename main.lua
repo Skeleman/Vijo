@@ -35,10 +35,7 @@ function love.draw()
 	Camera:setScale(scale, scale)
 	Camera:set()
 
-	-- World.drawBackground(Camera.x, Camera.y)
-	World.drawMap(Camera.x, Camera.y)
-	Characters.draw(Camera.x, Camera.y)
-	World.drawObjects(Camera.x, Camera.y)
+	World.draw(Camera.x, Camera.y)
 
 	Camera:unset()
 

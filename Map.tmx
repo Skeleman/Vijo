@@ -12,7 +12,7 @@
  <tileset firstgid="4134" name="Base" tilewidth="16" tileheight="16" tilecount="4096" columns="64">
   <image source="Assets/tileset.png" width="1024" height="1024"/>
  </tileset>
- <layer name="Base" width="100" height="100">
+ <layer name="Base_1" width="100" height="100">
   <properties>
    <property name="Tileset" value="Base"/>
   </properties>
@@ -119,7 +119,7 @@
 4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134,4134
 </data>
  </layer>
- <layer name="Objects" width="100" height="100">
+ <layer name="Objects_1" width="100" height="100">
   <properties>
    <property name="Tileset" value="Objects"/>
   </properties>
@@ -226,7 +226,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer name="Collision" width="100" height="100">
+ <layer name="Collision_1" width="100" height="100">
   <properties>
    <property name="Tileset" value="Icons"/>
   </properties>
@@ -333,7 +333,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup name="Characters">
+ <objectgroup name="Characters_1">
   <object id="2" name="Dude" type="NPC" gid="4121" x="1048" y="469" width="16" height="32">
    <properties>
     <property name="Speed" type="int" value="100"/>
