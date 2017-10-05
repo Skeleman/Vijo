@@ -43,7 +43,6 @@ function World.load(worldName, scale)
 	-- Load map coordinate information
 	print ("Loading world information...")
 
-	local yVal
 	local zVal
 
 	zMax = 0
@@ -51,6 +50,7 @@ function World.load(worldName, scale)
 	-- Load world data, layer by layer
 	local layerIndex
 	for layerIndex in pairs(MapFile.layers) do
+		zVal = getElevation(MapFile.layers[layerIndex].name)
 
 		-- Load tile layer info
 		if (MapFile.layers[layerIndex].type == "tilelayer") then
@@ -65,21 +65,17 @@ function World.load(worldName, scale)
 
 				-- Iterate over full world height
 				for yVal = 0, World.height - 1 do
-					local zVal
 
 					-- Create sub-array of Y coordinates. Do not clear.
 					if not (World[xVal][yVal]) then World[xVal][yVal] = {} end
 
 					-- Create sub-array of Z coordinates. Do not clear.
-					zVal = getElevation(MapFile.layers[layerIndex].name)
 					if not (World[xVal][yVal][zVal]) then World[xVal][yVal][zVal] = {} end
 
 					World[xVal][yVal][zVal][getLayerType(MapFile.layers[layerIndex].name)] = 
 						parseMapValue(MapFile.layers[layerIndex].data[xVal + (World.width * (yVal)) + 1],
 						tilesetOffsets[MapFile.layers[layerIndex].properties.Tileset] - 1)
 
-					-- Keep track of highest layer for given world
-					if (zVal > zMax) then zMax = zVal end
 				end
 			end
 		end
@@ -87,6 +83,8 @@ function World.load(worldName, scale)
 		-- Load object layer info
 		if (MapFile.layers[layerIndex].type == "objectlayer") then
 
+		-- Keep track of highest layer for given world
+		if (zVal > zMax) then zMax = zVal end
 		end
 	end
 
@@ -118,9 +116,10 @@ function setUpTileset(tileset)
 		local tilesetImage
 		local tileXIndex, tileYIndex, tileZIndex
 		local quadsIndex = 0
+		local zVal
 
 		-- Create new layer if not already created
-		if not (layers[tileset.name]) then layers[tileset.name] = {} end
+		if not (layers[tileset.name]) then layers[tileset.name] = {}  end
 
 		print ("Loading textures for "..tileset.name.." layers")
 
@@ -128,7 +127,10 @@ function setUpTileset(tileset)
 		tilesetImage:setFilter("nearest", "nearest") -- force no filtering for pixelated look
 
 		-- Create sprite grid to draw (FIXME: must each elevation must be drawn separately? If so, need zMax value loop for next line with elevation index)
-		layers[tileset.name].spriteSet = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
+		for zVal = 1, 1 do
+			layers[tileset.name][zVal] = {}
+			layers[tileset.name][zVal].spriteSet = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
+		end
 
 		-- Split tileset into its tile pieces (only needed once per texture, so elevation is irrelevant)
 		layers[tileset.name].quads = {}
@@ -170,9 +172,11 @@ end
 
 -- Render world, with offset for smooth scrolling
 function World.draw(camX, camY)
-	love.graphics.draw(layers["Base"].spriteSet, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
-	Characters.draw(camX, camY)
-	love.graphics.draw(layers["Objects"].spriteSet, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
+	for zVal = 1, 1 do
+		love.graphics.draw(layers["Base"][zVal].spriteSet, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
+		Characters.draw(camX, camY)
+		love.graphics.draw(layers["Objects"][zVal].spriteSet, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
+	end
 end
 
 
@@ -184,23 +188,24 @@ function updateWorldTiles(screenTileX, screenTileY)
 
 	-- Rebuild array of visible world tiles
 	for layerName in pairs(layers) do
-		-- Clear array of tiles to display
-		layers[layerName].spriteSet:clear()
 
 		-- Rebuild array of tiles to display
-		for xVal = 0, World.displayWidth - 1 do
-			for yVal = 0, World.displayHeight - 1 do
-				for zVal = 1, zMax do
+		for zVal = 1, 1 do
+
+			-- Clear array of tiles to display
+			layers[layerName][zVal].spriteSet:clear()
+			for xVal = 0, World.displayWidth - 1 do
+				for yVal = 0, World.displayHeight - 1 do
 					if (World[xVal + screenTileX][yVal + screenTileY][zVal][layerName]) then
-						layers[layerName].spriteSet:add(layers[layerName].quads[World[xVal + screenTileX][yVal + screenTileY][zVal][layerName] - 1],
+						layers[layerName][zVal].spriteSet:add(layers[layerName].quads[World[xVal + screenTileX][yVal + screenTileY][zVal][layerName] - 1],
 									  xVal * World.tileSize, yVal * World.tileSize)
 					end
 				end
 			end
-		end
 
-		-- Update graphics card as soon as new sprite set is ready
-		layers[layerName].spriteSet:flush()
+			-- Update graphics card as soon as new sprite set is ready
+			layers[layerName][zVal].spriteSet:flush()
+		end
 	end
 
 end
@@ -258,7 +263,7 @@ end
 function getElevation(LayerName)
 
 	local start = string.find(LayerName, "_")
-	local elevation = tonumber(string.sub(LayerName, start + 1)) or 1
+	local elevation = tonumber(string.sub(LayerName, start + 1))
 
 	return elevation
 
