@@ -1,19 +1,19 @@
 -- Globals
 
-local Camera = require("camera")
-local Characters = require("characters")
-local World = require("world")
+local WorldManager = require("worldmanager")
 
 local scale = 2
+
+local mode
 
 -- PRIMARY FUNCTIONS
 
 -- Initialization function: runs once when game starts
 function love.load()
 
-	World.load("Map1", scale)
-	Characters.initialize()
-	Camera.target = "player"
+	WorldManager.load("Map1", scale)
+
+	mode = "game"
 --	love.graphics.setFont(12) -- wants a font, not a number
 
 end
@@ -21,23 +21,14 @@ end
 -- Main processing function; called continuously; dt = change in time in seconds
 function love.update(dt)
 
-	Characters.update(dt)
-	if(Camera.mode == "followPlayer") then
-		Camera:follow(Characters.ID["player"].xPos, Characters.ID["player"].yPos)
-	end
-	World.update(Camera.x, Camera.y)
+	WorldManager.update(dt)
 
 end
 
 -- Main graphics function; called continuously. love.graphics only has an effect here
 function love.draw()
 
-	Camera:setScale(scale, scale)
-	Camera:set()
-
-	World.draw(Camera.x, Camera.y)
-
-	Camera:unset()
+	WorldManager.draw(scale)
 
 	-- print FPS over everything
 	love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 20)
@@ -76,59 +67,26 @@ end
 --function love.mousereleased(x, y, button, istouch)
 --end
 
--- Process key press
+-- Determine how to handle key presses
 function love.keypressed(key)
 
-	-- Exit game
-	if key == "escape" then
-		love.event.quit()
-	end
+	if mode == "game" then
 
-	-- Process player movement (FIXME: three keys pressed in circular order causes 'drifting')
-	if key == "up" or key == "down" or key == "left" or key == "right" then
+		WorldManager.keypressed(key)
 
-		local stateChange
-		if Characters.ID["player"].state ~= "moving" then
-			stateChange = true
-		end
-
-		Characters.ID["player"].direction = key
-		Characters.ID["player"].state = "moving"
-		Characters.ID["player"]:nextAnimation(true)
-
-	end
-
-	-- Debug
-	if key == "1" then
-		Characters.ID["player"]:setSprite(1, 2, 0)
-		Characters.ID["player"]:nextAnimation()
-	elseif key == "2" then
-		Characters.ID["player"]:setSprite(1, 2, 1)
-		Characters.ID["player"]:nextAnimation()
-	elseif key == "3" then
-		Characters.ID["player"]:setSprite(1, 2, 2)
-		Characters.ID["player"]:nextAnimation()
+	elseif mode == "menu" then
 	end
 
 end
 
--- Process key release
+-- Determine how to handle key releases
 function love.keyreleased(key)
 
-	-- Process player movement
-	if key == "up" or key == "down" or key == "left" or key == "right" then
-		if love.keyboard.isDown("up") then
-			Characters.ID["player"].direction = "up"
-		elseif love.keyboard.isDown("down") then
-			Characters.ID["player"].direction = "down"
-		elseif love.keyboard.isDown("left") then
-			Characters.ID["player"].direction = "left"
-		elseif love.keyboard.isDown("right") then
-			Characters.ID["player"].direction = "right"
-		else
-			Characters.ID["player"].state = "idle"
-		end
-		Characters.ID["player"]:nextAnimation()
+	if mode == "game" then
+
+		WorldManager.keyreleased(key)
+
+	elseif mode == "menu" then
 	end
 end
 

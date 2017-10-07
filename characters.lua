@@ -1,4 +1,3 @@
-
 local Characters = {
 	ID = {}
 }
@@ -10,14 +9,15 @@ local speedScale = 1
 local animScale = 150
 local tileSize = 16
 
-function Characters.initialize()
+function Characters.load()
 
-	print ("Loading character images...")
 	-- Load character images
+	print ("Loading character images...")
 	spriteSheet = love.graphics.newImage("Assets/characters.png")
 	spriteSheet:setFilter("nearest", "nearest")
 
 	-- Create player character
+	print ("Initializing characters...")
 	Characters.ID["player"] = Characters:new("player", 2, 1, 2, 100)
 
 end
@@ -39,7 +39,8 @@ function Characters:new(name, spriteIndex, width, height, speed)
 	char.direction = "down"		-- Orientation character is facing
 	char.state = "idle"			-- Current character action
 	char.xPos = 1200			-- Character X-coordinate
-	char.yPos = 700				-- Character Y-coordinate
+	char.yPos = 800				-- Character Y-coordinate
+	char.zPos = 1				-- Character elevation
 	char.speed = speed			-- Character movement speed
 	char.anim = {}				-- Animation representing character
 
@@ -63,20 +64,6 @@ function Characters.update(dt)
 
 	local name
 
-	-- Update player based on user input
-	if love.keyboard.isDown("up") then
-		Characters.ID["player"]:move(dt, "up")
-	end
-	if love.keyboard.isDown("down") then
-		Characters.ID["player"]:move(dt, "down")
-	end
-	if love.keyboard.isDown("left") then
-		Characters.ID["player"]:move(dt, "left")
-	end
-	if love.keyboard.isDown("right") then
-		Characters.ID["player"]:move(dt, "right")
-	end
-
 	-- Loop through all characters and update according to all game systems(FIXME: Only apply to visible characters)
 	for name in pairs(Characters.ID) do
 		-- Move forward in animations
@@ -85,40 +72,55 @@ function Characters.update(dt)
 end
 
 -- Main function for rendering character sprites
-function Characters.draw(camX, camY)
+function Characters.draw(camX, camY, elevation)
 
 	local spriteNum
 
 	-- Loop through all created characters
 	for name in pairs(Characters.ID) do
-
-		-- Determine frame in animation to display
-		spriteNum = math.floor(Characters.ID[name].anim.currentTime / Characters.ID[name].anim.duration * #Characters.ID[name].anim.quads) + 1
-		-- Draw selected frame
-		love.graphics.draw(spriteSheet, Characters.ID[name].anim.quads[spriteNum],
-							Characters.ID[name].xPos, 
-							Characters.ID[name].yPos,
-							 0, 1, 1,
-							(Characters.ID[name].width * Characters.ID[name].spriteSize / 2),
-							(Characters.ID[name].height * Characters.ID[name].spriteSize / 2))
-
+		if (Characters.ID[name].zPos == elevation) then
+			-- Determine frame in animation to display
+			spriteNum = math.floor(Characters.ID[name].anim.currentTime / Characters.ID[name].anim.duration * #Characters.ID[name].anim.quads) + 1
+			-- Draw selected frame
+			love.graphics.draw(spriteSheet, Characters.ID[name].anim.quads[spriteNum],
+								Characters.ID[name].xPos, 
+								Characters.ID[name].yPos,
+								 0, 1, 1,
+								(Characters.ID[name].width * Characters.ID[name].spriteSize / 2),
+								(Characters.ID[name].height * Characters.ID[name].spriteSize / 2))
+		end
 	end
 
 end
 
 -- Update character position
-function Characters:move(dt, direction)
+function Characters:moveX(dt, xDir)
 
-	local distance = self.speed * speedScale * dt
+	self.xPos = self.speed * speedScale * dt * xDir
 
-	if (direction == "up") then
-		self.yPos = self.yPos - distance
-	elseif (direction == "down") then
-		self.yPos = self.yPos + distance
-	elseif (direction == "left") then
-		self.xPos = self.xPos - distance
-	else
-		self.xPos = self.xPos + distance
+
+end
+
+function Characters:move(xPos, yPos)
+
+	self.xPos = xPos
+	self.yPos = yPos
+
+end
+
+-- Clamp character to tile boundaries
+function Characters:clamp(xDir, yDir, tileSize)
+
+	if (xDir > 0) then
+		self.xPos = math.ceil(self.xPos / tileSize) * tileSize
+	elseif (xDir < 0) then
+		self.xPos = math.floor(self.xPos / tileSize) * tileSize
+	end
+
+	if (yDir > 0) then
+		self.yPos = math.ceil(self.yPos / tileSize) * tileSize
+	elseif (yDir < 0) then
+		self.yPos = math.floor(self.yPos / tileSize) * tileSize
 	end
 
 end

@@ -4,7 +4,7 @@ Camera = {
   scaleX = 1,
   scaleY = 1,
   rotation = 0,
-  mode = "followPlayer"
+  target = "player"
 }
 
 local World = require("world")

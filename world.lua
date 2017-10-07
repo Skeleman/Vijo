@@ -1,10 +1,8 @@
 local World = {
-	width, height,
-	displayWidth, displayHeight,
-	tileSize
+	width = 1, height = 1,
+	displayWidth= 1, displayHeight = 1,
+	tileSize = 16
 }
-
-local Characters = require("characters")
 
 -- Initialized when loaded
 local layers = {}
@@ -12,12 +10,11 @@ local layers = {}
 local oldX = 0
 local oldY = 0
 
-local zMax = 0
+local zMax
 
 function World.load(worldName, scale)
 
 	-- Reset world FIXME: put in logic to prevent unnecessary unloading
-	World.X = {}
 	layers = {}
 
 	local tileInits = {}
@@ -32,12 +29,12 @@ function World.load(worldName, scale)
 	World.tileSize = MapFile.tilewidth
 	World.updateDimension(scale)
 
-	-- Load tilesets used by map FIXME: Properly link names of textures so only layer names need be hardcoded
-	print ("Loading world textures...")
+	-- Associate texture array indices with texture names. Required to account for 'Tiled' layer offsets
+	print ("Parsing texture array...")
 	local tilesetIndex
-	local tilesetOffsets = {}
+	local tilesetIndices = {}
 	for tilesetIndex in pairs(MapFile.tilesets) do
-		tilesetOffsets[MapFile.tilesets[tilesetIndex].name] = setUpTileset(MapFile.tilesets[tilesetIndex])
+		tilesetIndices[MapFile.tilesets[tilesetIndex].name] = tilesetIndex
 	end
 
 	-- Load map coordinate information
@@ -50,6 +47,8 @@ function World.load(worldName, scale)
 	-- Load world data, layer by layer
 	local layerIndex
 	for layerIndex in pairs(MapFile.layers) do
+
+		-- Get elevation value from layer name
 		zVal = getElevation(MapFile.layers[layerIndex].name)
 
 		-- Load tile layer info
@@ -72,20 +71,26 @@ function World.load(worldName, scale)
 					-- Create sub-array of Z coordinates. Do not clear.
 					if not (World[xVal][yVal][zVal]) then World[xVal][yVal][zVal] = {} end
 
+					-- Update world array. "parseMapValue" will prevent addition of empty data and account for texture ID offset
 					World[xVal][yVal][zVal][getLayerType(MapFile.layers[layerIndex].name)] = 
 						parseMapValue(MapFile.layers[layerIndex].data[xVal + (World.width * (yVal)) + 1],
-						tilesetOffsets[MapFile.layers[layerIndex].properties.Tileset] - 1)
-
+						MapFile.tilesets[tilesetIndices[MapFile.layers[layerIndex].properties.Tileset]].firstgid - 1)
 				end
 			end
-		end
 
 		-- Load object layer info
-		if (MapFile.layers[layerIndex].type == "objectlayer") then
+		elseif (MapFile.layers[layerIndex].type == "objectlayer") then
+		end
 
 		-- Keep track of highest layer for given world
 		if (zVal > zMax) then zMax = zVal end
-		end
+
+	end
+
+	-- Set up tileset and textures
+	print ("Loading world textures...")
+	for tilesetIndex in pairs(MapFile.tilesets) do
+		setUpTileset(MapFile.tilesets[tilesetIndex])
 	end
 
 	-- Done using mapfile data; use only custom structures from here
@@ -95,8 +100,11 @@ function World.load(worldName, scale)
 	print ("Initializing world...")
 	updateWorldTiles(0, 0)
 
+	return zMax
+
 end
 
+-- Update number of tiles to display on screen
 function World.updateDimension(scale)
 
 	World.displayWidth = math.ceil(love.graphics.getWidth() / World.tileSize / scale) + 1
@@ -126,8 +134,8 @@ function setUpTileset(tileset)
 		tilesetImage = love.graphics.newImage(tileset.image)
 		tilesetImage:setFilter("nearest", "nearest") -- force no filtering for pixelated look
 
-		-- Create sprite grid to draw (FIXME: must each elevation must be drawn separately? If so, need zMax value loop for next line with elevation index)
-		for zVal = 1, 1 do
+		-- Create sprite grid to draw
+		for zVal = 1, zMax do
 			layers[tileset.name][zVal] = {}
 			layers[tileset.name][zVal].spriteSet = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
 		end
@@ -170,15 +178,13 @@ function World.update(camX, camY)
 
 end
 
--- Render world, with offset for smooth scrolling
-function World.draw(camX, camY)
-	for zVal = 1, 1 do
-		love.graphics.draw(layers["Base"][zVal].spriteSet, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
-		Characters.draw(camX, camY)
-		love.graphics.draw(layers["Objects"][zVal].spriteSet, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
-	end
-end
+-- Render world, layer by layer
+function World.draw(layerType, camX, camY, zVal)
 
+	-- Start with base landscape layer
+	love.graphics.draw(layers[layerType][zVal].spriteSet, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
+
+end
 
 -- Re-define sprite batch based on what is visible
 function updateWorldTiles(screenTileX, screenTileY)
@@ -190,7 +196,7 @@ function updateWorldTiles(screenTileX, screenTileY)
 	for layerName in pairs(layers) do
 
 		-- Rebuild array of tiles to display
-		for zVal = 1, 1 do
+		for zVal = 1, zMax do
 
 			-- Clear array of tiles to display
 			layers[layerName][zVal].spriteSet:clear()
@@ -198,7 +204,7 @@ function updateWorldTiles(screenTileX, screenTileY)
 				for yVal = 0, World.displayHeight - 1 do
 					if (World[xVal + screenTileX][yVal + screenTileY][zVal][layerName]) then
 						layers[layerName][zVal].spriteSet:add(layers[layerName].quads[World[xVal + screenTileX][yVal + screenTileY][zVal][layerName] - 1],
-									  xVal * World.tileSize, yVal * World.tileSize)
+									  						  xVal * World.tileSize, yVal * World.tileSize)
 					end
 				end
 			end
@@ -257,7 +263,6 @@ function getLayerType(layerName)
 	return layerType
 
 end
-
 
 -- Determine elevation of layer being loaded
 function getElevation(LayerName)
