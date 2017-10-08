@@ -2,7 +2,7 @@
 
 local WorldManager = require("worldmanager")
 
-local scale = 2
+local scale = 5
 
 local mode
 

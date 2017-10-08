@@ -9,6 +9,9 @@ local padding = 0
 
 local zMax = 1
 
+local squareX = {}
+local squareY = {}
+
 -- Initialize game assets and data
 function WorldManager.load(mapName, scale)
 
@@ -56,10 +59,13 @@ end
 
 function manageCollision(char, magnitude, axis)
 
-	local moveSuccess = false
+	local moveSuccess = true
 
 	local xIndex
 	local yIndex
+
+	squareX = {}
+	squareY = {}
 
 	local minX = math.floor((char.xPos + padding) / World.tileSize)
 	local maxX = math.floor((char.xPos + char.width - padding) / World.tileSize)	-- FIXME: add negative padding as not to be so strict. do for Y as well
@@ -72,6 +78,8 @@ function manageCollision(char, magnitude, axis)
 	-- FIXME: See if there's a way to try/catch bad array indices
 	for xIndex = minX, maxX do
 		for yIndex = minY, maxY do
+			squareX[xIndex] = xIndex
+			squareY[yIndex] = yIndex
 			if (World[xIndex]) then
 				if (World[xIndex][yIndex]) then
 					if (World[xIndex][yIndex][char.zPos]) then
@@ -95,21 +103,23 @@ function manageCollision(char, magnitude, axis)
 				break
 			end
 		end
+		if (moveSuccess == false) then break end
 	end
 
 	if (moveSuccess == false) then
 		print("Clamping Time!")
+		print("X = "..char.xPos..", Y = "..char.yPos)
 		if (axis == 'x') then
 			if (magnitude < 0) then
 				char.xPos = math.ceil(char.xPos / World.tileSize) * World.tileSize
 			elseif (magnitude > 0) then
-				char.xPos = math.floor(char.xPos / World.tileSize) * World.tileSize - 1
+				char.xPos = math.floor(char.xPos / World.tileSize) * World.tileSize
 			end
 		elseif (axis == 'y') then
 			if (magnitude < 0) then
 				char.yPos = math.ceil(char.yPos / World.tileSize) * World.tileSize
 			elseif (magnitude > 0) then
-				char.yPos = math.floor(char.yPos / World.tileSize) * World.tileSize - 1
+				char.yPos = math.floor(char.yPos / World.tileSize) * World.tileSize
 			end
 		end
 
@@ -123,10 +133,22 @@ function WorldManager.draw(scale)
 	Camera:setScale(scale, scale)
 	Camera:set()
 
+	local xIndex, yIndex
+
 	-- Draw all elevations
 	for zVal = 1, zMax do
 
 		World.draw("Base", Camera.x, Camera.y, zVal)
+
+		love.graphics.setColor(255,255,255)
+		if (zVal == 1) then
+			for xIndex in pairs(squareX) do
+				for yIndex in pairs(squareY) do
+					love.graphics.rectangle("fill", squareX[xIndex] * 16, squareY[yIndex] * 16, 16, 16)
+				end
+			end
+		end
+		love.graphics.setColor(100,100,100)
 
 		-- Draw all characters
 		Characters.draw(Camera.x, Camera.y, zVal)

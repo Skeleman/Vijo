@@ -5,7 +5,7 @@ local Characters = {
 local spriteSheet
 
 -- Game constants
-local speedScale = 1
+local speedScale = .2
 local animScale = 150
 local tileSize = 16			-- FIXME: Import dynamically
 
@@ -81,6 +81,10 @@ function Characters.draw(camX, camY, elevation)
 		if (Characters.ID[name].zPos == elevation) then
 			-- Determine frame in animation to display
 			spriteNum = math.floor(Characters.ID[name].anim.currentTime / Characters.ID[name].anim.duration * #Characters.ID[name].anim.quads) + 1
+
+			-- FIXME: DEBUG ONLY
+			love.graphics.rectangle("fill", Characters.ID[name].xPos, Characters.ID[name].yPos, Characters.ID[name].spriteSize, Characters.ID[name].spriteSize)
+
 			-- Draw selected frame
 			love.graphics.draw(spriteSheet, Characters.ID[name].anim.quads[spriteNum],
 								Characters.ID[name].xPos, 
