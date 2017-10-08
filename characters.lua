@@ -7,7 +7,7 @@ local spriteSheet
 -- Game constants
 local speedScale = 1
 local animScale = 150
-local tileSize = 16
+local tileSize = 16			-- FIXME: Import dynamically
 
 function Characters.load()
 
@@ -31,18 +31,18 @@ function Characters:new(name, spriteIndex, width, height, speed)
 	setmetatable(char, self)
 	self.__index = self
 
-	-- Initialize attributes
-	char.name = name			-- Name of character
-	char.height = height		-- Character height, in number of tiles
-	char.width = width			-- Character width, in number of tiles
-	char.spriteSize = tileSize	-- Pixel count of one tile for character drawing
-	char.direction = "down"		-- Orientation character is facing
-	char.state = "idle"			-- Current character action
-	char.xPos = 1200			-- Character X-coordinate
-	char.yPos = 800				-- Character Y-coordinate
-	char.zPos = 1				-- Character elevation
-	char.speed = speed			-- Character movement speed
-	char.anim = {}				-- Animation representing character
+	-- Initialize attributes FIXME: Load from file
+	char.name = name					-- Name of character
+	char.height = height * tileSize		-- Character height, in number of tiles
+	char.width = width * tileSize		-- Character width, in number of tiles
+	char.spriteSize = tileSize			-- Pixel count of one tile for character drawing
+	char.direction = "down"				-- Orientation character is facing
+	char.state = "idle"					-- Current character action
+	char.xPos = 1200					-- Character X-coordinate, in pixels from origin
+	char.yPos = 800						-- Character Y-coordinate, in pixels from origin
+	char.zPos = 1						-- Map Z-coordinate of character
+	char.speed = speed					-- Character movement speed
+	char.anim = {}						-- Animation representing character
 
 	-- Define animation table for each character action
 	char.animationSet = {}
@@ -86,42 +86,18 @@ function Characters.draw(camX, camY, elevation)
 								Characters.ID[name].xPos, 
 								Characters.ID[name].yPos,
 								 0, 1, 1,
-								(Characters.ID[name].width * Characters.ID[name].spriteSize / 2),
-								(Characters.ID[name].height * Characters.ID[name].spriteSize / 2))
+								0,
+								(Characters.ID[name].height - Characters.ID[name].spriteSize))
 		end
 	end
 
 end
 
--- Update character position
-function Characters:moveX(dt, xDir)
+-- Update character position. Split by axis so collision need only block one direction of movement
+function Characters:move(dt, magnitude, axis)
 
-	self.xPos = self.speed * speedScale * dt * xDir
-
-
-end
-
-function Characters:move(xPos, yPos)
-
-	self.xPos = xPos
-	self.yPos = yPos
-
-end
-
--- Clamp character to tile boundaries
-function Characters:clamp(xDir, yDir, tileSize)
-
-	if (xDir > 0) then
-		self.xPos = math.ceil(self.xPos / tileSize) * tileSize
-	elseif (xDir < 0) then
-		self.xPos = math.floor(self.xPos / tileSize) * tileSize
-	end
-
-	if (yDir > 0) then
-		self.yPos = math.ceil(self.yPos / tileSize) * tileSize
-	elseif (yDir < 0) then
-		self.yPos = math.floor(self.yPos / tileSize) * tileSize
-	end
+	if (axis == 'x') then self.xPos = self.xPos + self.speed * speedScale * dt * magnitude end
+	if (axis == 'y') then self.yPos = self.yPos + self.speed * speedScale * dt * magnitude end
 
 end
 
@@ -144,8 +120,8 @@ end
 -- Load new set of animations/sizes for character
 function Characters:setSprite(width, height, spriteIndex)
 
-	self.width = width
-	self.height = height
+	self.width = width * tileSize
+	self.height = height * tileSize
 
 	self.animationSet["idle"]["down"]= newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {0}, 1)
 	self.animationSet["idle"]["up"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {3}, 1)

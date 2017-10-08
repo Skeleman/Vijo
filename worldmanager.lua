@@ -5,6 +5,8 @@ local Characters = require("characters")
 local Camera = require("camera")
 local World = require("world")
 
+local padding = 0
+
 local zMax = 1
 
 -- Initialize game assets and data
@@ -30,37 +32,88 @@ function WorldManager.update(dt)
 	-- Update world
 	World.update(Camera.x, Camera.y, dt)
 
-	local yDir = 0
-	local xDir = 0
+	local yMag = 0
+	local xMag = 0
 
 	-- Update player based on user input
-	if love.keyboard.isDown("up") then		yDir = yDir - 1 end
-	if love.keyboard.isDown("down") then	yDir = yDir + 1 end
-	if love.keyboard.isDown("left") then	xDir = xDir - 1 end
-	if love.keyboard.isDown("right") then	xDir = xDir + 1 end
+	if love.keyboard.isDown("up") then		yMag = yMag - 1 end
+	if love.keyboard.isDown("down") then	yMag = yMag + 1 end
+	if love.keyboard.isDown("left") then	xMag = xMag - 1 end
+	if love.keyboard.isDown("right") then	xMag = xMag + 1 end
 
-	if (xDir ~= 0 or yDir ~= 0) then
-		local newX, newY
-		print ("Char, pre: "..Characters.ID["player"].xPos..", "..Characters.ID["player"].yPos)
-		newX, newY = Characters.ID["player"]:prepMove(dt, xDir, yDir)
-		local tileX = math.floor(newX / World.tileSize)
-		local tileY = math.floor(newY / World.tileSize)
-		print ("Move, post: "..newX..", "..newY..","..tileX..", "..tileY)
-		if (World[tileX]) then
-			if (World[tileX][tileY]) then
-				if (World[tileX][tileY][Characters.ID["player"].zPos]) then
-					if (World[tileX][tileY][Characters.ID["player"].zPos]["Base"] and (not World[tileX][tileY][Characters.ID["player"].zPos]["Collision"])) then
-						Characters.ID["player"]:move(newX, newY)
+	if (xMag ~= 0) then
+		Characters.ID["player"]:move(dt, xMag, 'x')
+		manageCollision(Characters.ID["player"], xMag, 'x')
+	end
+	if (yMag ~= 0) then
+		Characters.ID["player"]:move(dt, yMag, "y")
+		manageCollision(Characters.ID["player"], yMag, 'y')
+	end
+	-- Update characters
+	Characters.update(dt)
+
+end
+
+function manageCollision(char, magnitude, axis)
+
+	local moveSuccess = false
+
+	local xIndex
+	local yIndex
+
+	local minX = math.floor((char.xPos + padding) / World.tileSize)
+	local maxX = math.floor((char.xPos + char.width - padding) / World.tileSize)	-- FIXME: add negative padding as not to be so strict. do for Y as well
+	local minY = math.floor((char.yPos + padding) / World.tileSize)
+	local maxY = math.floor((char.yPos + char.width - padding) / World.tileSize)
+	local maxZ = char.height + 1 -- FIXME: Implement collision based on walking into ceilings
+
+	print("X: "..minX.." to "..maxX..", Y: "..minY.." to "..maxY)
+
+	-- FIXME: See if there's a way to try/catch bad array indices
+	for xIndex = minX, maxX do
+		for yIndex = minY, maxY do
+			if (World[xIndex]) then
+				if (World[xIndex][yIndex]) then
+					if (World[xIndex][yIndex][char.zPos]) then
+						if (World[xIndex][yIndex][char.zPos]["Base"] and (not World[xIndex][yIndex][char.zPos]["Collision"])) then
+							moveSuccess = true
+						else
+							print("Hit at X: "..xIndex..", Y: "..yIndex)
+							moveSuccess = false
+							break
+						end
 					else
-						Characters.ID["player"]:clamp(xDir, yDir, World.tileSize)
+						moveSuccess = false
+						break
 					end
+				else
+					moveSuccess = false
+					break
 				end
+			else
+				moveSuccess = false
+				break
 			end
 		end
 	end
 
-	-- Update characters
-	Characters.update(dt)
+	if (moveSuccess == false) then
+		print("Clamping Time!")
+		if (axis == 'x') then
+			if (magnitude < 0) then
+				char.xPos = math.ceil(char.xPos / World.tileSize) * World.tileSize
+			elseif (magnitude > 0) then
+				char.xPos = math.floor(char.xPos / World.tileSize) * World.tileSize - 1
+			end
+		elseif (axis == 'y') then
+			if (magnitude < 0) then
+				char.yPos = math.ceil(char.yPos / World.tileSize) * World.tileSize
+			elseif (magnitude > 0) then
+				char.yPos = math.floor(char.yPos / World.tileSize) * World.tileSize - 1
+			end
+		end
+
+	end
 
 end
 
