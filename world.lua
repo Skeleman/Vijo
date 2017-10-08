@@ -250,7 +250,7 @@ end
 -- Determine layer type being loaded
 function getLayerType(layerName)
 
-	local validLayers = {"Base", "Objects", "Collision"}
+	local validLayers = {"Base", "Walls", "Collision"}
 	local compareIndex
 	local layerType
 

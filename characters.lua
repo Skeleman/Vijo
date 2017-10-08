@@ -5,8 +5,8 @@ local Characters = {
 local spriteSheet
 
 -- Game constants
-local speedScale = .2
-local animScale = 150
+local CHAR_SPEED = 0.6
+local ANIM_SPEED = 150
 local tileSize = 16			-- FIXME: Import dynamically
 
 function Characters.load()
@@ -83,15 +83,15 @@ function Characters.draw(camX, camY, elevation)
 			spriteNum = math.floor(Characters.ID[name].anim.currentTime / Characters.ID[name].anim.duration * #Characters.ID[name].anim.quads) + 1
 
 			-- FIXME: DEBUG ONLY
-			love.graphics.rectangle("fill", Characters.ID[name].xPos, Characters.ID[name].yPos, Characters.ID[name].spriteSize, Characters.ID[name].spriteSize)
+--			love.graphics.rectangle("fill", Characters.ID[name].xPos, Characters.ID[name].yPos, Characters.ID[name].spriteSize, Characters.ID[name].spriteSize)
 
 			-- Draw selected frame
 			love.graphics.draw(spriteSheet, Characters.ID[name].anim.quads[spriteNum],
 								Characters.ID[name].xPos, 
 								Characters.ID[name].yPos,
-								 0, 1, 1,
+								0, 1, 1,
 								0,
-								(Characters.ID[name].height - Characters.ID[name].spriteSize))
+								Characters.ID[name].height - Characters.ID[name].spriteSize)
 		end
 	end
 
@@ -100,8 +100,8 @@ end
 -- Update character position. Split by axis so collision need only block one direction of movement
 function Characters:move(dt, magnitude, axis)
 
-	if (axis == 'x') then self.xPos = self.xPos + self.speed * speedScale * dt * magnitude end
-	if (axis == 'y') then self.yPos = self.yPos + self.speed * speedScale * dt * magnitude end
+	if (axis == 'x') then self.xPos = self.xPos + self.speed * CHAR_SPEED * dt * magnitude end
+	if (axis == 'y') then self.yPos = self.yPos + self.speed * CHAR_SPEED * dt * magnitude end
 
 end
 
@@ -131,10 +131,10 @@ function Characters:setSprite(width, height, spriteIndex)
 	self.animationSet["idle"]["up"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {3}, 1)
 	self.animationSet["idle"]["left"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {6}, 1)
 	self.animationSet["idle"]["right"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {9}, 1)
-	self.animationSet["moving"]["down"]= newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {1, 0, 2, 0}, self.speed / animScale)
-	self.animationSet["moving"]["up"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {4, 3, 5, 3}, self.speed / animScale)
-	self.animationSet["moving"]["left"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {7, 6, 8, 6}, self.speed / animScale)
-	self.animationSet["moving"]["right"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {10, 9, 11, 9}, self.speed / animScale)
+	self.animationSet["moving"]["down"]= newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {1, 0, 2, 0}, self.speed / ANIM_SPEED)
+	self.animationSet["moving"]["up"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {4, 3, 5, 3}, self.speed / ANIM_SPEED)
+	self.animationSet["moving"]["left"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {7, 6, 8, 6}, self.speed / ANIM_SPEED)
+	self.animationSet["moving"]["right"] = newAnimation(spriteSheet, width * tileSize, height * tileSize, spriteIndex, {10, 9, 11, 9}, self.speed / ANIM_SPEED)
 
 end
 
