@@ -49,6 +49,7 @@ function Characters.load(CharFile, DrawList)
 					Characters.ID[char.name] = Characters:new(char.name, char.properties.ImageIndex, char.width, char.height,
 															  char.properties.Speed, char.x, char.y, zVal)
 
+					if not (DrawList[zVal]) then DrawList[zVal] = {} end
 					updateDrawOrder(Characters.ID[char.name], DrawList[zVal])
 				end
 			end
@@ -107,6 +108,7 @@ function Characters.update(dt)
 		-- Move forward in animations
 		Characters.ID[name]:advanceAnimationTime(dt)
 	end
+
 end
 
 -- Main function for rendering character sprites
@@ -122,6 +124,7 @@ function Characters:draw()
 						self.xPos, self.yPos,
 						0, 1, 1, 
 						0, self.height - self.spriteSize)
+
 end
 
 -- Update character position. Split by axis so collision need only block one direction of movement
@@ -135,18 +138,22 @@ end
 
 -- Update counter for character's animation (FIXME: generalize to all animations, not just characters)
 function Characters:advanceAnimationTime(dt)
+
 	self.anim.currentTime = self.anim.currentTime + dt
 	if self.anim.currentTime >= self.anim.duration then
 		self.anim.currentTime = self.anim.currentTime - self.anim.duration
 	end
+
 end
 
 -- Set new animation for character
 function Characters:nextAnimation(reset)
+
 	self.anim = self.animationSet[self.state][self.direction]
 	if reset then
 		self.anim.currentTime = 0
 	end
+
 end
 
 -- Load new set of animations/sizes for character

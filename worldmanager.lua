@@ -53,6 +53,7 @@ function WorldManager.update(dt)
 	if love.keyboard.isDown("left") then	xMag = xMag - 1 end
 	if love.keyboard.isDown("right") then	xMag = xMag + 1 end
 
+	-- Split movement by axis to allow movement along collosiion boundaries
 	if (xMag ~= 0) then
 		Characters.ID.player:move(dt, xMag, 'x', DrawList[Characters.ID.player.zPos])
 		manageCollision(Characters.ID.player, xMag, 'x')
@@ -61,6 +62,7 @@ function WorldManager.update(dt)
 		Characters.ID.player:move(dt, yMag, "y", DrawList[Characters.ID.player.zPos])
 		manageCollision(Characters.ID.player, yMag, 'y')
 	end
+
 	-- Update characters
 	Characters.update(dt)
 

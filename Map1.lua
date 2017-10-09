@@ -8,7 +8,7 @@ return {
   height = 100,
   tilewidth = 16,
   tileheight = 16,
-  nextobjectid = 18,
+  nextobjectid = 19,
   properties = {},
   tilesets = {
     {
@@ -743,6 +743,36 @@ return {
             ["Greeting"] = "I am grill",
             ["ImageIndex"] = 1,
             ["Speed"] = 80
+          }
+        }
+      }
+    },
+    {
+      type = "objectgroup",
+      name = "Characters_2",
+      visible = true,
+      opacity = 1,
+      offsetx = 0,
+      offsety = 0,
+      draworder = "topdown",
+      properties = {},
+      objects = {
+        {
+          id = 18,
+          name = "Flying Baby",
+          type = "NPC",
+          shape = "rectangle",
+          x = 1167,
+          y = 829.5,
+          width = 16,
+          height = 32,
+          rotation = 0,
+          gid = 1493,
+          visible = true,
+          properties = {
+            ["Greeting"] = "asd",
+            ["ImageIndex"] = 0,
+            ["Speed"] = 101
           }
         }
       }

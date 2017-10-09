@@ -33,6 +33,7 @@ function love.draw()
 
 	-- print FPS over everything
 	love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 20)
+
 end
 
 
@@ -54,6 +55,7 @@ function newAnimation(image, Width, height, yIndex, frames, duration)
 	animation.currentTime = 0
 
 	return animation
+
 end
 
 -- EVENTS
@@ -89,6 +91,7 @@ function love.keyreleased(key)
 
 	elseif mode == "menu" then
 	end
+
 end
 
 -- Manage focus change
