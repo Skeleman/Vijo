@@ -4,7 +4,7 @@ Camera = {
   scaleX = 1,
   scaleY = 1,
   rotation = 0,
-  mode = "followPlayer"
+  target = "player"
 }
 
 local World = require("world")
@@ -45,9 +45,9 @@ function Camera:setScale(sx, sy)
   self.scaleY = sy or self.scaleY
 end
 
-function Camera:follow(x, y)
-  x = x - love.graphics.getWidth() / 2 / self.scaleX
-  y = y - love.graphics.getHeight() / 2 / self.scaleY
+function Camera:follow(x, y, size)
+  x = x - love.graphics.getWidth() / 2 / self.scaleX + size / 2
+  y = y - love.graphics.getHeight() / 2 / self.scaleY + size / 2
   self.x = x < 0 and 0 or (x > (World.width - World.displayWidth) * World.tileSize and (World.width - World.displayWidth) * World.tileSize or x)
   self.y = y < 0 and 0 or (y > (World.height - World.displayHeight) * World.tileSize and (World.height - World.displayHeight) * World.tileSize or y)
   
