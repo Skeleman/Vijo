@@ -1,7 +1,8 @@
 local World = {
-	width = 1, height = 1,
-	displayWidth= 1, displayHeight = 1,
-	tileSize = 16
+	width, height,
+	displayWidth, displayHeight,
+	tileSize,
+	zMax
 }
 
 -- Initialized when loaded
@@ -10,18 +11,13 @@ local layers = {}
 local oldX = 0
 local oldY = 0
 
-local zMax
 
-function World.load(worldName, scale)
+function World.load(MapFile, scale)
 
 	-- Reset world FIXME: put in logic to prevent unnecessary unloading
 	layers = {}
 
 	local tileInits = {}
-
-	-- Load map file
-	print ("Loading '"..worldName..".lua'...")
-	local MapFile = require (worldName)	-- FIXME: find way to load file from subdirectory, or write means of paring other file type
 
 	-- Load map parameters
 	World.width = MapFile.width
@@ -42,17 +38,19 @@ function World.load(worldName, scale)
 
 	local zVal
 
-	zMax = 0
+	World.zMax = 0
 
 	-- Load world data, layer by layer
 	local layerIndex
+	local layerType
 	for layerIndex in pairs(MapFile.layers) do
 
-		-- Get elevation value from layer name
-		zVal = getElevation(MapFile.layers[layerIndex].name)
-
-		-- Load tile layer info
+		-- Only process tile layers
 		if (MapFile.layers[layerIndex].type == "tilelayer") then
+
+			-- Get elevation value from layer name
+			layerType, zVal = getLayerInfo(MapFile.layers[layerIndex].name)
+
 			local xVal
 
 			-- Iterate over full world width
@@ -72,18 +70,15 @@ function World.load(worldName, scale)
 					if not (World[xVal][yVal][zVal]) then World[xVal][yVal][zVal] = {} end
 
 					-- Update world array. "parseMapValue" will prevent addition of empty data and account for texture ID offset
-					World[xVal][yVal][zVal][getLayerType(MapFile.layers[layerIndex].name)] = 
+					World[xVal][yVal][zVal][layerType] = 
 						parseMapValue(MapFile.layers[layerIndex].data[xVal + (World.width * (yVal)) + 1],
 						MapFile.tilesets[tilesetIndices[MapFile.layers[layerIndex].properties.Tileset]].firstgid - 1)
 				end
 			end
-
-		-- Load object layer info
-		elseif (MapFile.layers[layerIndex].type == "objectlayer") then
 		end
 
 		-- Keep track of highest layer for given world
-		if (zVal > zMax) then zMax = zVal end
+		if (zVal > World.zMax) then World.zMax = zVal end
 
 	end
 
@@ -93,14 +88,9 @@ function World.load(worldName, scale)
 		setUpTileset(MapFile.tilesets[tilesetIndex])
 	end
 
-	-- Done using mapfile data; use only custom structures from here
-	MapFile = nil
-
 	-- Initialize world tiles
 	print ("Initializing world...")
 	updateWorldTiles(0, 0)
-
-	return zMax
 
 end
 
@@ -135,7 +125,7 @@ function setUpTileset(tileset)
 		tilesetImage:setFilter("nearest", "nearest") -- force no filtering for pixelated look
 
 		-- Create sprite grid to draw
-		for zVal = 1, zMax do
+		for zVal = 1, World.zMax do
 			layers[tileset.name][zVal] = {}
 			layers[tileset.name][zVal].spriteSet = love.graphics.newSpriteBatch(tilesetImage, World.displayWidth * World.displayHeight)
 		end
@@ -143,9 +133,9 @@ function setUpTileset(tileset)
 		-- Split tileset into its tile pieces (only needed once per texture, so elevation is irrelevant)
 		layers[tileset.name].quads = {}
 
-		for tileXIndex = 0, (tileset.imagewidth / tileset.tilewidth) - 1 do
-			for tileYIndex = 0, (tileset.imageheight / tileset.tileheight) - 1 do
-				layers[tileset.name].quads[quadsIndex] = love.graphics.newQuad(tileYIndex * tileset.tilewidth, tileXIndex * tileset.tileheight, 
+		for tileYIndex = 0, (tileset.imageheight / tileset.tileheight) - 1 do
+			for tileXIndex = 0, (tileset.imagewidth / tileset.tilewidth) - 1 do
+				layers[tileset.name].quads[quadsIndex] = love.graphics.newQuad(tileXIndex * tileset.tilewidth, tileYIndex * tileset.tileheight, 
 															tileset.tilewidth, tileset.tileheight, tileset.imagewidth, tileset.imageheight)
 				quadsIndex = quadsIndex + 1
 			end
@@ -181,7 +171,7 @@ end
 -- Render world, layer by layer
 function World.draw(layerType, camX, camY, zVal)
 
-	-- Start with base landscape layer
+	-- Print layer
 	love.graphics.draw(layers[layerType][zVal].spriteSet, camX - (camX % World.tileSize), camY - (camY % World.tileSize))
 
 end
@@ -195,10 +185,10 @@ function updateWorldTiles(screenTileX, screenTileY)
 	-- Rebuild array of visible world tiles
 	for layerName in pairs(layers) do
 
-		-- Rebuild array of tiles to display
-		for zVal = 1, zMax do
+		-- Rebuild array of tiles to World.display
+		for zVal = 1, World.zMax do
 
-			-- Clear array of tiles to display
+			-- Clear array of tiles to World.display
 			layers[layerName][zVal].spriteSet:clear()
 			for xVal = 0, World.displayWidth - 1 do
 				for yVal = 0, World.displayHeight - 1 do
@@ -233,12 +223,12 @@ end
 -- Determine whether tileset being analyzed has image data that needn't be loaded
 function tilesetValid(tilesetName)
 
-	local noTex = {"Collision", "Icons"}
+	local noTex = {"Collision", "Icons", "Special", "Characters", "Objects"}
 	local compareIndex
 	local validName = true
 
 	for compareIndex in pairs(noTex) do
-		if tilesetName == noTex[compareIndex] then
+		if string.find(tilesetName, noTex[compareIndex]) then
 			validName = false
 		end
 	end
@@ -248,29 +238,13 @@ function tilesetValid(tilesetName)
 end
 
 -- Determine layer type being loaded
-function getLayerType(layerName)
+function getLayerInfo(layerName)
 
-	local validLayers = {"Base", "Walls", "Collision"}
-	local compareIndex
-	local layerType
+	local start = string.find(layerName, '_')
+	local elevation = tonumber(string.sub(layerName, start + 1))
+	local layerType = string.sub(layerName, 1, start - 1)
 
-	for compareIndex in pairs(validLayers) do
-		if string.find(layerName, validLayers[compareIndex]) then
-			layerType = validLayers[compareIndex]
-		end
-	end
-
-	return layerType
-
-end
-
--- Determine elevation of layer being loaded
-function getElevation(LayerName)
-
-	local start = string.find(LayerName, "_")
-	local elevation = tonumber(string.sub(LayerName, start + 1))
-
-	return elevation
+	return layerType, elevation
 
 end
 

@@ -11,6 +11,7 @@ local mode
 -- Initialization function: runs once when game starts
 function love.load()
 
+	-- FIXME: Determine name of map to load from save file
 	WorldManager.load("Map1", scale)
 
 	mode = "game"
