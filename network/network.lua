@@ -1,16 +1,30 @@
 
 local Network = {
-	remoteUrl = "http://127.0.0.1:8080"
+	remoteHost = "127.0.0.1",
+	remotePort = "15100"
 }
 
-local http = require("socket.http")
+local host, port = Network.remoteHost, Network.remotePort
+local socket = require("socket")
+-- local udp = assert(socket.udp())
 
 function Network:testRequest()
 	print "Sending request"
-	r, c, h = http.request {
-		method = "GET",
-		url = Network.remoteUrl
-	}
+	tcp = assert(socket.tcp())
+	assert(tcp:connect(host, port));
+	-- note the newline below
+	assert(tcp:send("hello world\n"));
+	-- udp:sendto("This is a test", host, port)
+
+	-- print(udp:receive())
+
+	while true do
+		local s, status, partial = tcp:receive()
+		print(s or partial)
+		if status == "closed" then break end
+	end
+	print("Done receiving")
+	tcp:close()
 end
 
 return Network
