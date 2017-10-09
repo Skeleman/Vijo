@@ -1,6 +1,6 @@
 -- Globals
-local Network = require("network.network")
 local WorldManager = require("worldmanager")
+local NetworkManager = require("network.network")
 
 local scale = 3
 
@@ -22,6 +22,10 @@ end
 function love.update(dt)
 
 	WorldManager.update(dt)
+
+	if NetworkManager:canUpdate(dt) then
+		NetworkManager:testRequest()
+	end
 
 end
 
