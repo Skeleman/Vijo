@@ -8,7 +8,7 @@ return {
   height = 100,
   tilewidth = 16,
   tileheight = 16,
-  nextobjectid = 20,
+  nextobjectid = 31,
   properties = {},
   tilesets = {
     {
@@ -108,32 +108,8 @@ return {
       tiles = {}
     },
     {
-      name = "objects",
-      firstgid = 401,
-      tilewidth = 16,
-      tileheight = 16,
-      spacing = 0,
-      margin = 0,
-      image = "Assets/objects.png",
-      imagewidth = 448,
-      imageheight = 624,
-      tileoffset = {
-        x = 0,
-        y = 0
-      },
-      grid = {
-        orientation = "orthogonal",
-        width = 16,
-        height = 16
-      },
-      properties = {},
-      terrains = {},
-      tilecount = 1092,
-      tiles = {}
-    },
-    {
       name = "characters_1_2",
-      firstgid = 1493,
+      firstgid = 401,
       tilewidth = 16,
       tileheight = 32,
       spacing = 0,
@@ -157,7 +133,7 @@ return {
     },
     {
       name = "world",
-      firstgid = 1529,
+      firstgid = 437,
       filename = "World.tsx",
       tilewidth = 16,
       tileheight = 16,
@@ -469,7 +445,7 @@ return {
     },
     {
       name = "characters_2_2",
-      firstgid = 2015,
+      firstgid = 923,
       tilewidth = 32,
       tileheight = 32,
       spacing = 0,
@@ -489,6 +465,30 @@ return {
       properties = {},
       terrains = {},
       tilecount = 12,
+      tiles = {}
+    },
+    {
+      name = "objects_1_1",
+      firstgid = 935,
+      tilewidth = 16,
+      tileheight = 16,
+      spacing = 0,
+      margin = 0,
+      image = "Assets/objects_1_1.png",
+      imagewidth = 80,
+      imageheight = 48,
+      tileoffset = {
+        x = 0,
+        y = 0
+      },
+      grid = {
+        orientation = "orthogonal",
+        width = 16,
+        height = 16
+      },
+      properties = {},
+      terrains = {},
+      tilecount = 15,
       tiles = {}
     }
   },
@@ -978,58 +978,156 @@ return {
       },
       objects = {
         {
-          id = 10,
-          name = "",
+          id = 20,
+          name = "Sign",
           type = "",
           shape = "rectangle",
-          x = 1202,
-          y = 863.5,
+          x = 1200,
+          y = 864,
           width = 16,
           height = 16,
           rotation = 0,
-          gid = 401,
+          gid = 935,
           visible = true,
           properties = {}
         },
         {
-          id = 11,
-          name = "",
+          id = 21,
+          name = "Pokeball",
           type = "",
           shape = "rectangle",
-          x = 1235,
-          y = 945.5,
+          x = 1332,
+          y = 792,
           width = 16,
           height = 16,
           rotation = 0,
-          gid = 546,
+          gid = 942,
           visible = true,
           properties = {}
         },
         {
-          id = 12,
-          name = "",
+          id = 22,
+          name = "Rock",
           type = "",
           shape = "rectangle",
-          x = 1472,
-          y = 957.5,
+          x = 1132,
+          y = 970,
           width = 16,
           height = 16,
           rotation = 0,
-          gid = 489,
+          gid = 939,
           visible = true,
           properties = {}
         },
         {
-          id = 13,
-          name = "",
+          id = 23,
+          name = "Rock",
           type = "",
           shape = "rectangle",
-          x = 1203.5,
+          x = 1145,
+          y = 976,
+          width = 16,
+          height = 16,
+          rotation = 0,
+          gid = 939,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 24,
+          name = "Rock",
+          type = "",
+          shape = "rectangle",
+          x = 1147,
+          y = 987,
+          width = 16,
+          height = 16,
+          rotation = 0,
+          gid = 939,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 25,
+          name = "Rock",
+          type = "",
+          shape = "rectangle",
+          x = 1158,
+          y = 986,
+          width = 16,
+          height = 16,
+          rotation = 0,
+          gid = 939,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 26,
+          name = "Rock",
+          type = "",
+          shape = "rectangle",
+          x = 1171,
           y = 994,
           width = 16,
           height = 16,
           rotation = 0,
-          gid = 405,
+          gid = 939,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 27,
+          name = "Rock",
+          type = "",
+          shape = "rectangle",
+          x = 1174,
+          y = 1010,
+          width = 16,
+          height = 16,
+          rotation = 0,
+          gid = 939,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 28,
+          name = "Rock",
+          type = "",
+          shape = "rectangle",
+          x = 1199,
+          y = 1010,
+          width = 16,
+          height = 16,
+          rotation = 0,
+          gid = 939,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 29,
+          name = "Stump",
+          type = "",
+          shape = "rectangle",
+          x = 1482,
+          y = 903,
+          width = 16,
+          height = 16,
+          rotation = 0,
+          gid = 946,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 30,
+          name = "Bush",
+          type = "",
+          shape = "rectangle",
+          x = 1343,
+          y = 963,
+          width = 16,
+          height = 16,
+          rotation = 0,
+          gid = 941,
           visible = true,
           properties = {}
         }
@@ -1055,7 +1153,7 @@ return {
           width = 16,
           height = 32,
           rotation = 0,
-          gid = 1493,
+          gid = 401,
           visible = true,
           properties = {
             ["Speed"] = 30
@@ -1071,7 +1169,7 @@ return {
           width = 16,
           height = 32,
           rotation = 0,
-          gid = 1505,
+          gid = 413,
           visible = true,
           properties = {
             ["Speed"] = 80
@@ -1087,7 +1185,7 @@ return {
           width = 32,
           height = 32,
           rotation = 0,
-          gid = 2015,
+          gid = 923,
           visible = true,
           properties = {
             ["Speed"] = 1
@@ -1115,7 +1213,7 @@ return {
           width = 16,
           height = 32,
           rotation = 0,
-          gid = 1493,
+          gid = 401,
           visible = true,
           properties = {
             ["Speed"] = 101
