@@ -32,6 +32,8 @@ function WorldManager.load(worldName, scale)
 	-- Done using mapfile data; use only custom structures from here
 	MapFile = nil
 
+	print("")
+
 end
 
 -- Update world data
@@ -87,7 +89,7 @@ function manageCollision(char, magnitude, axis)
 			if (World[xIndex]) then
 				if (World[xIndex][yIndex]) then
 					if (World[xIndex][yIndex][char.zPos]) then
-						if (World[xIndex][yIndex][char.zPos].Base and (not World[xIndex][yIndex][char.zPos].Walls)) then
+						if (World[xIndex][yIndex][char.zPos]["base"] and (not World[xIndex][yIndex][char.zPos]["walls"])) then
 							moveSuccess = true
 						else
 							moveSuccess = false
@@ -140,21 +142,21 @@ function WorldManager.draw(scale)
 	for zVal = 1, World.zMax do
 
 		-- Start by drawing base layer
-		World.draw("Base", Camera.x, Camera.y, zVal)
+		World.draw("base", Camera.x, Camera.y, zVal)
 
 		-- Then draw landscape overlays
-		World.draw("Overlays", Camera.x, Camera.y, zVal)
+		World.draw("overlays", Camera.x, Camera.y, zVal)
 
 		-- Then draw collision walls
-		World.draw("Walls", Camera.x, Camera.y, zVal)
+		World.draw("walls", Camera.x, Camera.y, zVal)
 
 		-- Then draw details
-		World.draw("Detail", Camera.x, Camera.y, zVal)
+		World.draw("detail", Camera.x, Camera.y, zVal)
 
 		-- Draw all characters and objects based on Y coordinates
 		if (DrawList[zVal]) then
 			for drawIndex in pairs(DrawList[zVal]) do
-				if (DrawList[zVal][drawIndex].type == "Characters") then
+				if (DrawList[zVal][drawIndex].type == "characters") then
 					Characters.ID[DrawList[zVal][drawIndex].name]:draw(Camera.x, Camera.y, zVal)
 				end
 			end
@@ -189,13 +191,16 @@ function WorldManager.keypressed(key)
 
 	-- Debug
 	if key == "1" then
-		Characters.ID.player:setSprite(1, 2, 0)
+		Characters.ID.player:setSprite(16, 32, 0)
 		Characters.ID.player:nextAnimation()
 	elseif key == "2" then
-		Characters.ID.player:setSprite(1, 2, 1)
+		Characters.ID.player:setSprite(16, 32, 1)
 		Characters.ID.player:nextAnimation()
 	elseif key == "3" then
-		Characters.ID.player:setSprite(1, 2, 2)
+		Characters.ID.player:setSprite(16, 32, 2)
+		Characters.ID.player:nextAnimation()
+	elseif key == "4" then
+		Characters.ID.player:setSprite(32, 32, 0)
 		Characters.ID.player:nextAnimation()
 	end
 

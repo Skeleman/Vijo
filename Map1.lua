@@ -8,11 +8,11 @@ return {
   height = 100,
   tilewidth = 16,
   tileheight = 16,
-  nextobjectid = 19,
+  nextobjectid = 20,
   properties = {},
   tilesets = {
     {
-      name = "Base",
+      name = "base",
       firstgid = 1,
       tilewidth = 16,
       tileheight = 16,
@@ -36,7 +36,7 @@ return {
       tiles = {}
     },
     {
-      name = "Overlays",
+      name = "overlays",
       firstgid = 29,
       tilewidth = 16,
       tileheight = 16,
@@ -60,7 +60,7 @@ return {
       tiles = {}
     },
     {
-      name = "Walls",
+      name = "walls",
       firstgid = 263,
       tilewidth = 16,
       tileheight = 16,
@@ -84,7 +84,7 @@ return {
       tiles = {}
     },
     {
-      name = "Detail",
+      name = "detail",
       firstgid = 395,
       tilewidth = 16,
       tileheight = 16,
@@ -108,7 +108,7 @@ return {
       tiles = {}
     },
     {
-      name = "Objects",
+      name = "objects",
       firstgid = 401,
       tilewidth = 16,
       tileheight = 16,
@@ -132,7 +132,7 @@ return {
       tiles = {}
     },
     {
-      name = "Characters_1_2",
+      name = "characters_1_2",
       firstgid = 1493,
       tilewidth = 16,
       tileheight = 32,
@@ -154,12 +154,348 @@ return {
       terrains = {},
       tilecount = 36,
       tiles = {}
+    },
+    {
+      name = "world",
+      firstgid = 1529,
+      filename = "World.tsx",
+      tilewidth = 16,
+      tileheight = 16,
+      spacing = 0,
+      margin = 0,
+      image = "Assets/full base cleaned.png",
+      imagewidth = 288,
+      imageheight = 432,
+      tileoffset = {
+        x = 0,
+        y = 0
+      },
+      grid = {
+        orientation = "orthogonal",
+        width = 16,
+        height = 16
+      },
+      properties = {},
+      terrains = {
+        {
+          name = "Grass",
+          tile = 19,
+          properties = {}
+        },
+        {
+          name = "Light Path",
+          tile = 73,
+          properties = {}
+        },
+        {
+          name = "Dark Path",
+          tile = 127,
+          properties = {}
+        },
+        {
+          name = "Pond",
+          tile = 241,
+          properties = {}
+        },
+        {
+          name = "Island",
+          tile = 235,
+          properties = {}
+        }
+      },
+      tilecount = 486,
+      tiles = {
+        {
+          id = 0,
+          terrain = { -1, -1, -1, 0 }
+        },
+        {
+          id = 1,
+          terrain = { -1, -1, 0, 0 }
+        },
+        {
+          id = 2,
+          terrain = { -1, -1, 0, -1 }
+        },
+        {
+          id = 4,
+          terrain = { -1, 0, 0, 0 }
+        },
+        {
+          id = 5,
+          terrain = { 0, -1, 0, 0 }
+        },
+        {
+          id = 18,
+          terrain = { -1, 0, -1, 0 }
+        },
+        {
+          id = 19,
+          terrain = { 0, 0, 0, 0 }
+        },
+        {
+          id = 20,
+          terrain = { 0, -1, 0, -1 }
+        },
+        {
+          id = 22,
+          terrain = { 0, 0, -1, 0 }
+        },
+        {
+          id = 23,
+          terrain = { 0, 0, 0, -1 }
+        },
+        {
+          id = 36,
+          terrain = { -1, 0, -1, -1 }
+        },
+        {
+          id = 37,
+          terrain = { 0, 0, -1, -1 }
+        },
+        {
+          id = 38,
+          terrain = { 0, -1, -1, -1 }
+        },
+        {
+          id = 54,
+          terrain = { -1, -1, -1, 1 }
+        },
+        {
+          id = 55,
+          terrain = { -1, -1, 1, 1 }
+        },
+        {
+          id = 56,
+          terrain = { -1, -1, 1, -1 }
+        },
+        {
+          id = 58,
+          terrain = { -1, 1, 1, 1 }
+        },
+        {
+          id = 59,
+          terrain = { 1, -1, 1, 1 }
+        },
+        {
+          id = 72,
+          terrain = { -1, 1, -1, 1 }
+        },
+        {
+          id = 73,
+          terrain = { 1, 1, 1, 1 }
+        },
+        {
+          id = 74,
+          terrain = { 1, -1, 1, -1 }
+        },
+        {
+          id = 76,
+          terrain = { 1, 1, -1, 1 }
+        },
+        {
+          id = 77,
+          terrain = { 1, 1, 1, -1 }
+        },
+        {
+          id = 90,
+          terrain = { -1, 1, -1, -1 }
+        },
+        {
+          id = 91,
+          terrain = { 1, 1, -1, -1 }
+        },
+        {
+          id = 92,
+          terrain = { 1, -1, -1, -1 }
+        },
+        {
+          id = 108,
+          terrain = { -1, -1, -1, 2 }
+        },
+        {
+          id = 109,
+          terrain = { -1, -1, 2, 2 }
+        },
+        {
+          id = 110,
+          terrain = { -1, -1, 2, -1 }
+        },
+        {
+          id = 112,
+          terrain = { -1, 2, 2, 2 }
+        },
+        {
+          id = 113,
+          terrain = { 2, -1, 2, 2 }
+        },
+        {
+          id = 126,
+          terrain = { -1, 2, -1, 2 }
+        },
+        {
+          id = 127,
+          terrain = { 2, 2, 2, 2 }
+        },
+        {
+          id = 128,
+          terrain = { 2, -1, 2, -1 }
+        },
+        {
+          id = 130,
+          terrain = { 2, 2, -1, 2 }
+        },
+        {
+          id = 131,
+          terrain = { 2, 2, 2, -1 }
+        },
+        {
+          id = 144,
+          terrain = { -1, 2, -1, -1 }
+        },
+        {
+          id = 145,
+          terrain = { 2, 2, -1, -1 }
+        },
+        {
+          id = 146,
+          terrain = { 2, -1, -1, -1 }
+        },
+        {
+          id = 216,
+          terrain = { -1, -1, -1, 4 }
+        },
+        {
+          id = 217,
+          terrain = { -1, -1, 4, 4 }
+        },
+        {
+          id = 218,
+          terrain = { -1, -1, 4, -1 }
+        },
+        {
+          id = 220,
+          terrain = { -1, 4, 4, 4 }
+        },
+        {
+          id = 221,
+          terrain = { 4, -1, 4, 4 }
+        },
+        {
+          id = 222,
+          terrain = { -1, -1, -1, 3 }
+        },
+        {
+          id = 223,
+          terrain = { -1, -1, 3, 3 }
+        },
+        {
+          id = 224,
+          terrain = { -1, -1, 3, -1 }
+        },
+        {
+          id = 226,
+          terrain = { -1, 3, 3, 3 }
+        },
+        {
+          id = 227,
+          terrain = { 3, -1, 3, 3 }
+        },
+        {
+          id = 234,
+          terrain = { -1, 4, -1, 4 }
+        },
+        {
+          id = 235,
+          terrain = { 4, 4, 4, 4 }
+        },
+        {
+          id = 236,
+          terrain = { 4, -1, 4, -1 }
+        },
+        {
+          id = 238,
+          terrain = { 4, 4, -1, 4 }
+        },
+        {
+          id = 239,
+          terrain = { 4, 4, 4, -1 }
+        },
+        {
+          id = 240,
+          terrain = { -1, 3, -1, 3 }
+        },
+        {
+          id = 241,
+          terrain = { 3, 3, 3, 3 }
+        },
+        {
+          id = 242,
+          terrain = { 3, -1, 3, -1 }
+        },
+        {
+          id = 244,
+          terrain = { 3, 3, -1, 3 }
+        },
+        {
+          id = 245,
+          terrain = { 3, 3, 3, -1 }
+        },
+        {
+          id = 252,
+          terrain = { -1, 4, -1, -1 }
+        },
+        {
+          id = 253,
+          terrain = { 4, 4, -1, -1 }
+        },
+        {
+          id = 254,
+          terrain = { 4, -1, -1, -1 }
+        },
+        {
+          id = 258,
+          terrain = { -1, 3, -1, -1 }
+        },
+        {
+          id = 259,
+          terrain = { 3, 3, -1, -1 }
+        },
+        {
+          id = 260,
+          terrain = { 3, -1, -1, -1 }
+        }
+      }
+    },
+    {
+      name = "characters_2_2",
+      firstgid = 2015,
+      tilewidth = 32,
+      tileheight = 32,
+      spacing = 0,
+      margin = 0,
+      image = "Assets/characters_2_2.png",
+      imagewidth = 384,
+      imageheight = 32,
+      tileoffset = {
+        x = 0,
+        y = 0
+      },
+      grid = {
+        orientation = "orthogonal",
+        width = 32,
+        height = 32
+      },
+      properties = {},
+      terrains = {},
+      tilecount = 12,
+      tiles = {}
     }
   },
   layers = {
     {
       type = "tilelayer",
-      name = "Base_1",
+      name = "base_1",
       x = 0,
       y = 0,
       width = 100,
@@ -169,7 +505,7 @@ return {
       offsetx = 0,
       offsety = 0,
       properties = {
-        ["Tileset"] = "Base"
+        ["Tileset"] = "base"
       },
       encoding = "lua",
       data = {
@@ -277,7 +613,7 @@ return {
     },
     {
       type = "tilelayer",
-      name = "Overlays_1",
+      name = "overlays_1",
       x = 0,
       y = 0,
       width = 100,
@@ -287,7 +623,7 @@ return {
       offsetx = 0,
       offsety = 0,
       properties = {
-        ["Tileset"] = "Overlays"
+        ["Tileset"] = "overlays"
       },
       encoding = "lua",
       data = {
@@ -343,10 +679,10 @@ return {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 35, 35, 35, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 47, 0, 0, 0, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 29, 76, 0, 0, 0, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 35, 35, 35, 35, 76, 0, 0, 0, 0, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 47, 0, 0, 0, 0, 0, 0, 64, 61, 61, 62, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 47, 48, 48, 48, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 76, 48, 48, 48, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 35, 35, 35, 35, 76, 48, 48, 48, 48, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 47, 48, 48, 48, 48, 48, 48, 64, 61, 61, 62, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 61, 61, 61, 61, 61, 61, 62, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -395,7 +731,7 @@ return {
     },
     {
       type = "tilelayer",
-      name = "Walls_1",
+      name = "walls_1",
       x = 0,
       y = 0,
       width = 100,
@@ -405,7 +741,7 @@ return {
       offsetx = 0,
       offsety = 0,
       properties = {
-        ["Tileset"] = "Walls"
+        ["Tileset"] = "walls"
       },
       encoding = "lua",
       data = {
@@ -513,7 +849,7 @@ return {
     },
     {
       type = "tilelayer",
-      name = "Detail_1",
+      name = "detail_1",
       x = 0,
       y = 0,
       width = 100,
@@ -523,7 +859,7 @@ return {
       offsetx = 0,
       offsety = 0,
       properties = {
-        ["Tileset"] = "Detail"
+        ["Tileset"] = "detail"
       },
       encoding = "lua",
       data = {
@@ -631,7 +967,7 @@ return {
     },
     {
       type = "objectgroup",
-      name = "Objects_1",
+      name = "objects_1",
       visible = true,
       opacity = 1,
       offsetx = 0,
@@ -701,7 +1037,7 @@ return {
     },
     {
       type = "objectgroup",
-      name = "Characters_1",
+      name = "characters_1",
       visible = true,
       opacity = 1,
       offsetx = 0,
@@ -722,8 +1058,6 @@ return {
           gid = 1493,
           visible = true,
           properties = {
-            ["Greeting"] = "Hello I am babby",
-            ["ImageIndex"] = 0,
             ["Speed"] = 30
           }
         },
@@ -740,16 +1074,30 @@ return {
           gid = 1505,
           visible = true,
           properties = {
-            ["Greeting"] = "I am grill",
-            ["ImageIndex"] = 1,
             ["Speed"] = 80
+          }
+        },
+        {
+          id = 19,
+          name = "Secret Fat Guy",
+          type = "NPC",
+          shape = "rectangle",
+          x = 944,
+          y = 1123,
+          width = 32,
+          height = 32,
+          rotation = 0,
+          gid = 2015,
+          visible = true,
+          properties = {
+            ["Speed"] = 1
           }
         }
       }
     },
     {
       type = "objectgroup",
-      name = "Characters_2",
+      name = "characters_2",
       visible = true,
       opacity = 1,
       offsetx = 0,
@@ -770,8 +1118,6 @@ return {
           gid = 1493,
           visible = true,
           properties = {
-            ["Greeting"] = "asd",
-            ["ImageIndex"] = 0,
             ["Speed"] = 101
           }
         }
@@ -779,8 +1125,8 @@ return {
     },
     {
       type = "objectgroup",
-      name = "CollisionObj_1",
-      visible = false,
+      name = "collisionObj_1",
+      visible = true,
       opacity = 1,
       offsetx = 0,
       offsety = 0,
@@ -812,17 +1158,17 @@ return {
     },
     {
       type = "tilelayer",
-      name = "Base_2",
+      name = "base_2",
       x = 0,
       y = 0,
       width = 100,
       height = 100,
-      visible = false,
+      visible = true,
       opacity = 1,
       offsetx = 0,
       offsety = 0,
       properties = {
-        ["Tileset"] = "Base"
+        ["Tileset"] = "base"
       },
       encoding = "lua",
       data = {

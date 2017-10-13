@@ -26,7 +26,7 @@ function World.load(MapFile, scale)
 	World.updateDimension(scale)
 
 	-- Associate texture array indices with texture names. Required to account for 'Tiled' layer offsets
-	print ("Parsing texture array...")
+	print ("Preparing world textures...")
 	local tilesetIndex
 	local tilesetIndices = {}
 	for tilesetIndex in pairs(MapFile.tilesets) do
@@ -223,7 +223,7 @@ end
 -- Determine whether tileset being analyzed has image data that needn't be loaded
 function tilesetValid(tilesetName)
 
-	local noTex = {"Collision", "Icons", "Special", "Characters", "Objects"}
+	local noTex = {"collision", "icons", "special", "characters", "objects"}
 	local compareIndex
 	local validName = true
 

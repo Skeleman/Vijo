@@ -2,32 +2,29 @@ local Characters = {
 	ID = {}
 }
 
-local spriteSheet
+local charSprites = {}
 
 -- Game constants
 local CHAR_SPEED = 0.6
 local ANIM_SPEED = 150
 local tileSize = 16			-- FIXME: Import dynamically
 
+local testImage
+
 function Characters.load(CharFile, DrawList)
 
 	local zVal
 
-	-- Load character images
-	print ("Loading character images...")
-	-- FIXME: Load character images from names in world file
-	spriteSheet = love.graphics.newImage("Assets/characters_1_2.png")
-	spriteSheet:setFilter("nearest", "nearest")
+	-- Associate texture array indices with texture names. Required to account for 'Tiled' layer offsets
+	print ("Preparing character textures...")
+	local charImageFileIndex
+	local charImageFileIndices = {}
+	for charImageFileIndex in pairs(CharFile.tilesets) do
+		charImageFileIndices[CharFile.tilesets[charImageFileIndex].name] = charImageFileIndex
+	end
 
-	-- Create player character FIXME: Load data from save file
-	print ("Initializing characters...")
-	Characters.ID.player = Characters:new("player", 2, 16, 32, 100, 1200, 800, 1)
-
-	-- Create array of objects to draw at given height value
-	if not (DrawList[Characters.ID.player.zPos]) then DrawList[Characters.ID.player.zPos] = {} end
-
-	-- Add character to drawing list
-	updateDrawOrder(Characters.ID.player, DrawList[Characters.ID.player.zPos], true)
+	-- Load character data and images
+	print ("Loading characters...")
 
 	-- Load non-PC character data, layer by layer
 	local layerIndex
@@ -40,21 +37,46 @@ function Characters.load(CharFile, DrawList)
 			-- Get elevation value from layer name
 			layerType, zVal = getLayerInfo(CharFile.layers[layerIndex].name)
 
-			if (layerType == "Characters") then
+			-- Only look at map file character layers
+			if (layerType == "characters") then
 				local charIndex
 
+				-- Loop through all characters in layer
 				for charIndex in pairs(CharFile.layers[layerIndex].objects) do
+
 					local char = CharFile.layers[layerIndex].objects[charIndex]
+					local charTexFile = "characters_"..math.ceil(char.width / tileSize).."_"..math.ceil(char.height / tileSize)
 
-					Characters.ID[char.name] = Characters:new(char.name, char.properties.ImageIndex, char.width, char.height,
-															  char.properties.Speed, char.x, char.y, zVal)
+					-- If new sized of character found, load new sprite sheet
+					if not (charSprites[char.width]) then charSprites[char.width] = {} end
+					if not (charSprites[char.width][charTileHeight]) then
+						charSprites[char.width][char.height] = love.graphics.newImage("Assets/"..charTexFile..".png")
+						charSprites[char.width][char.height]:setFilter("nearest", "nearest")
+					end
 
+					-- Create character object
+					Characters.ID[char.name] = Characters:new(char.name, 
+																math.floor((char.gid - CharFile.tilesets[charImageFileIndices[charTexFile]].firstgid) / 
+																					(CharFile.tilesets[charImageFileIndices[charTexFile]].imagewidth /
+																					 CharFile.tilesets[charImageFileIndices[charTexFile]].tilewidth)), 
+																char.width, char.height, 
+																char.properties.Speed, char.x, char.y, zVal)
+
+					-- Update drawing list for current character
 					if not (DrawList[zVal]) then DrawList[zVal] = {} end
-					updateDrawOrder(Characters.ID[char.name], DrawList[zVal])
+
+					updateDrawOrder(Characters.ID[char.name], DrawList[zVal], true)
+
 				end
 			end
 		end
 	end
+
+	-- Add character to drawing list FIXME: Get sprite and position data from save file
+	Characters.ID.player = Characters:new("player", 2, 16, 32, 100, 1200, 800, 1)
+	updateDrawOrder(Characters.ID.player, DrawList[Characters.ID.player.zPos], true)
+
+	print("")
 
 end
 
@@ -70,17 +92,16 @@ function Characters:new(name, spriteIndex, width, height, speed, xPos, yPos, ele
 	self.__index = self
 
 	-- Initialize attributes FIXME: Load from file
-	char.name = name					-- Name of character
-	char.height = height				-- Character height, in number of tiles
-	char.width = Width					-- Character width, in number of tiles
-	char.spriteSize = tileSize			-- Pixel count of one tile for character drawing
-	char.direction = "down"				-- Orientation character is facing
-	char.state = "idle"					-- Current character action
-	char.xPos = xPos					-- Character X-coordinate, in pixels from origin
-	char.yPos = yPos					-- Character Y-coordinate, in pixels from origin
-	char.zPos = elevation				-- Map Z-coordinate of character
-	char.speed = speed					-- Character movement speed
-	char.anim = {}						-- Animation representing character
+	char.name = name			-- Name of character
+	char.height = height		-- Character height, in number of pixels (used for collision)
+	char.width = width			-- Character width, in number of pixels (used for collision)
+	char.direction = "down"		-- Orientation character is facing
+	char.state = "idle"			-- Current character action
+	char.xPos = xPos			-- Character X-coordinate, in pixels from origin
+	char.yPos = yPos			-- Character Y-coordinate, in pixels from origin
+	char.zPos = elevation		-- Map Z-coordinate of character
+	char.speed = speed			-- Character movement speed
+	char.anim = {}				-- Animation representing character
 
 	-- Define animation table for each character action
 	char.animationSet = {}
@@ -88,7 +109,7 @@ function Characters:new(name, spriteIndex, width, height, speed, xPos, yPos, ele
 	char.animationSet["moving"] = {}
 
 	-- Assign animations for all character actions
-	-- FIXME: Create lookup of animations per index, not character. Only current animation should be stored on character
+	-- FIXME: Create lookup of animations per index, not character. Only current animation should be tied to character
 	char:setSprite(width, height, spriteIndex)
 
 	-- Assign current animation set
@@ -119,11 +140,11 @@ function Characters:draw()
 	-- Determine frame in animation to display
 	spriteNum = math.floor(self.anim.currentTime / self.anim.duration * #self.anim.quads) + 1
 
-	-- Draw selected frame
-	love.graphics.draw(spriteSheet, self.anim.quads[spriteNum],
+	-- Draw selected frame -- FIXME: remove division with new variable
+	love.graphics.draw(charSprites[self.width][self.height], self.anim.quads[spriteNum],
 						self.xPos, self.yPos,
 						0, 1, 1, 
-						0, self.height - self.spriteSize)
+						0, self.height - tileSize)
 
 end
 
@@ -159,17 +180,18 @@ end
 -- Load new set of animations/sizes for character
 function Characters:setSprite(width, height, spriteIndex)
 
+	-- Update character dimensions when new sprite is chosen
 	self.width = width
 	self.height = height
 
-	self.animationSet["idle"]["down"]= newAnimation(spriteSheet, width, height, spriteIndex, {0}, 1)
-	self.animationSet["idle"]["up"] = newAnimation(spriteSheet, width, height, spriteIndex, {3}, 1)
-	self.animationSet["idle"]["left"] = newAnimation(spriteSheet, width, height, spriteIndex, {6}, 1)
-	self.animationSet["idle"]["right"] = newAnimation(spriteSheet, width, height, spriteIndex, {9}, 1)
-	self.animationSet["moving"]["down"]= newAnimation(spriteSheet, width, height, spriteIndex, {1, 0, 2, 0}, self.speed / ANIM_SPEED)
-	self.animationSet["moving"]["up"] = newAnimation(spriteSheet, width, height, spriteIndex, {4, 3, 5, 3}, self.speed / ANIM_SPEED)
-	self.animationSet["moving"]["left"] = newAnimation(spriteSheet, width, height, spriteIndex, {7, 6, 8, 6}, self.speed / ANIM_SPEED)
-	self.animationSet["moving"]["right"] = newAnimation(spriteSheet, width, height, spriteIndex, {10, 9, 11, 9}, self.speed / ANIM_SPEED)
+	self.animationSet["idle"]["down"] = newAnimation(charSprites[width][height], width, height, spriteIndex, {0}, 1)
+	self.animationSet["idle"]["up"] = newAnimation(charSprites[width][height], width, height, spriteIndex, {3}, 1)
+	self.animationSet["idle"]["left"] = newAnimation(charSprites[width][height], width, height, spriteIndex, {6}, 1)
+	self.animationSet["idle"]["right"] = newAnimation(charSprites[width][height], width, height, spriteIndex, {9}, 1)
+	self.animationSet["moving"]["down"] = newAnimation(charSprites[width][height], width, height, spriteIndex, {1, 0, 2, 0}, self.speed / ANIM_SPEED)
+	self.animationSet["moving"]["up"] = newAnimation(charSprites[width][height], width, height, spriteIndex, {4, 3, 5, 3}, self.speed / ANIM_SPEED)
+	self.animationSet["moving"]["left"] = newAnimation(charSprites[width][height], width, height, spriteIndex, {7, 6, 8, 6}, self.speed / ANIM_SPEED)
+	self.animationSet["moving"]["right"] = newAnimation(charSprites[width][height], width, height, spriteIndex, {10, 9, 11, 9}, self.speed / ANIM_SPEED)
 
 end
 
@@ -191,7 +213,7 @@ function updateDrawOrder(char, DrawList, newEntry)
 	local removed = false
 
 	local entry = {}
-	entry.type = "Characters"
+	entry.type = "characters"
 	entry.name = char.name
 	entry.yPos = char.yPos
 

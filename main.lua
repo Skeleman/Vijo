@@ -39,7 +39,7 @@ end
 
 -- FUNCTIONS
 
-function newAnimation(image, Width, height, yIndex, frames, duration)
+function newAnimation(image, width, height, yIndex, frames, duration)
 
 	local xIndex
 	local animation = {}
@@ -48,7 +48,7 @@ function newAnimation(image, Width, height, yIndex, frames, duration)
 	animation.quads = {}
 
 	for xIndex in pairs(frames) do
-		table.insert(animation.quads, love.graphics.newQuad(frames[xIndex] * Width, yIndex * height, Width, height, image:getDimensions()))
+		table.insert(animation.quads, love.graphics.newQuad(frames[xIndex] * width, yIndex * height, width, height, image:getDimensions()))
 	end
 
 	animation.duration = duration
