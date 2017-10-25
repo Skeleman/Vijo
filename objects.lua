@@ -1,50 +1,45 @@
-local Objects = {
-	ID = {}
-}
+local Entities = require("entities")
+local Animations = require("animations")
 
-function Objects.load(ObjFile, DrawList)
+local Objects = Entities:new()
 
-	local zVal
+local ANIM_SPEED = 1.5
+local tileSize = 16			-- FIXME: Import dynamically
 
-	-- Load object images
-	print ("Loading object images...")
-	-- FIXME: Load object images from names in world file
-	spriteSheet = love.graphics.newImage("Assets/objects.png")
-	spriteSheet:setFilter("nearest", "nearest")
+function Objects:new(ID, image, xPos, yPos, elevation, width, height, index, oldEntity)
 
-	-- Create player character FIXME: Load data from save file
-	print ("Initializing world objects...")
+	print("Loading object "..ID.."...")
+	
+	-- Create new object
+	object = {}
 
-	-- Create array of objects to draw at given height value
-	if not (DrawList[Characters.ID.player.zPos]) then DrawList[Characters.ID.player.zPos] = {} end
+	-- Set alias so other functions can refer to "self"
+	setmetatable(object, self)
+	self.__index = self
 
-	-- Add character to drawing list
-	updateDrawOrder(Characters.ID.player, DrawList[Characters.ID.player.zPos], true)
+	-- Initialize attributes FIXME: Load from file
+	object.ID = ID				-- Object unique identifier
+	object.height = height		-- object height, in number of pixels (used for collision)
+	object.width = width		-- object width, in number of pixels (used for collision)
+	object.state = "idle"		-- Current object action -- FIXME: Design better scheme for static vs. animated objects
+	object.xPos = xPos			-- object X-coordinate, in pixels from origin
+	object.yPos = yPos			-- object Y-coordinate, in pixels from origin
+	object.zPos = elevation		-- Map Z-coordinate of object
+	object.sprite = {}			-- Animation representing object
 
-	-- Load non-PC character data, layer by layer
-	local layerIndex
-	local layerType
-	for layerIndex in pairs(ObjFile.layers) do
+	-- Assign animations for all object actions
+	-- FIXME: Create lookup of animations per index, not object. Only current animation should be tied to object
+	object:setSprite(image, width, height, index)
 
-		-- Only process object layers
-		if (ObjFile.layers[layerIndex].type == "objectgroup") then
+	return object
 
-			-- Get elevation value from layer name
-			layerType, zVal = getLayerInfo(ObjFile.layers[layerIndex].name)
+end
 
-			if (layerType == "Characters") then
-				local charIndex
+function Entities:update(dt)
 
-				for charIndex in pairs(ObjFile.layers[layerIndex].objects) do
-					local obj = ObjFile.layers[layerIndex].objects[charIndex]
-
-					Characters.ID[char.name] = Characters:new(char.name, char.properties.ImageIndex, char.width, char.height,
-															  char.properties.Speed, char.x, char.y, zVal)
-
-					updateDrawOrder(Characters.ID[char.name], DrawList[zVal])
-				end
-			end
-		end
+	self.sprite.currentTime = self.sprite.currentTime + dt
+	if(self.sprite.currentTime > self.sprite.duration) then
+		self.sprite.currentTime = self.sprite.currentTime - self.sprite.duration
 	end
 
 end

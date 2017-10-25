@@ -980,7 +980,7 @@ return {
         {
           id = 20,
           name = "Sign",
-          type = "",
+          type = "Sign",
           shape = "rectangle",
           x = 1200,
           y = 864,
@@ -989,7 +989,9 @@ return {
           rotation = 0,
           gid = 935,
           visible = true,
-          properties = {}
+          properties = {
+            ["Text"] = "Hey look you can read"
+          }
         },
         {
           id = 21,
@@ -1156,7 +1158,7 @@ return {
           gid = 401,
           visible = true,
           properties = {
-            ["Speed"] = 30
+            ["speed"] = 30
           }
         },
         {
@@ -1172,7 +1174,7 @@ return {
           gid = 413,
           visible = true,
           properties = {
-            ["Speed"] = 80
+            ["speed"] = 80
           }
         },
         {
@@ -1188,7 +1190,7 @@ return {
           gid = 923,
           visible = true,
           properties = {
-            ["Speed"] = 1
+            ["speed"] = 1
           }
         }
       }
@@ -1216,7 +1218,7 @@ return {
           gid = 401,
           visible = true,
           properties = {
-            ["Speed"] = 101
+            ["speed"] = 30
           }
         }
       }

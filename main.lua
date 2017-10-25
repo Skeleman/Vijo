@@ -39,25 +39,6 @@ end
 
 -- FUNCTIONS
 
-function newAnimation(image, width, height, yIndex, frames, duration)
-
-	local xIndex
-	local animation = {}
-
-	animation.spriteSheet = image
-	animation.quads = {}
-
-	for xIndex in pairs(frames) do
-		table.insert(animation.quads, love.graphics.newQuad(frames[xIndex] * width, yIndex * height, width, height, image:getDimensions()))
-	end
-
-	animation.duration = duration
-	animation.currentTime = 0
-
-	return animation
-
-end
-
 -- EVENTS
 
 -- Process mouse click 

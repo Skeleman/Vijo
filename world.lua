@@ -12,7 +12,7 @@ local oldX = 0
 local oldY = 0
 
 
-function World.load(MapFile, scale)
+function World.load(MapFile, tilesetIndices, scale)
 
 	-- Reset world FIXME: put in logic to prevent unnecessary unloading
 	layers = {}
@@ -24,14 +24,6 @@ function World.load(MapFile, scale)
 	World.height = MapFile.height
 	World.tileSize = MapFile.tilewidth
 	World.updateDimension(scale)
-
-	-- Associate texture array indices with texture names. Required to account for 'Tiled' layer offsets
-	print ("Preparing world textures...")
-	local tilesetIndex
-	local tilesetIndices = {}
-	for tilesetIndex in pairs(MapFile.tilesets) do
-		tilesetIndices[MapFile.tilesets[tilesetIndex].name] = tilesetIndex
-	end
 
 	-- Load map coordinate information
 	print ("Loading world information...")

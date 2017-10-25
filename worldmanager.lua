@@ -2,13 +2,19 @@ local WorldManager = {
 }
 
 local Characters = require("characters")
+local Objects = require("objects")
 local Camera = require("camera")
 local World = require("world")
+local Animations = require("animations")
 
-local DrawList = {}		--
+local Entities = {}
+local DrawList = {}
+local spriteSheets = {}
 
 local SPRITE_PADDING = 2	-- Amount of pixels on border of sprite to allow collision to overlap
 local EPSILON = 0.01
+
+local tileSize = 16			-- FIXME: Import dynamically
 
 -- Initialize game assets and data
 function WorldManager.load(worldName, scale)
@@ -17,14 +23,19 @@ function WorldManager.load(worldName, scale)
 	print ("Loading '"..worldName..".lua'...")
 	local MapFile = require (worldName)	-- FIXME: find way to load file from subdirectory, or write means of paring other file type
 
+	-- Associate texture array indices with texture names. Required to account for 'Tiled' layer offsets
+	print ("Preparing textures...")
+	local imageFileIndex
+	local imageFileIndices = {}
+	for imageFileIndex in pairs(MapFile.tilesets) do
+		imageFileIndices[MapFile.tilesets[imageFileIndex].name] = imageFileIndex
+	end
+
 	-- Initialize world data
-	World.load(MapFile, scale)
+	World.load(MapFile, imageFileIndices, scale)
 
-	-- Initialize character data
-	Characters.load(MapFile, DrawList)
-
-	-- Load object data
---	Objects.load(MapFile, DrawList)
+	-- Initialize character and object data
+	loadEntities(MapFile, imageFileIndices, DrawList)
 
 	-- Initialize camera
 	Camera.target = "player"
@@ -40,7 +51,7 @@ end
 function WorldManager.update(dt)
 
 	-- Update camera
-	Camera:follow(Characters.ID[Camera.target].xPos, Characters.ID[Camera.target].yPos, Characters.ID[Camera.target].width,
+	Camera:follow(Entities[Camera.target].xPos, Entities[Camera.target].yPos, Entities[Camera.target].width,
 				  World.width, World.height, World.displayWidth, World.displayHeight, World.tileSize)
 
 	-- Update world
@@ -57,16 +68,115 @@ function WorldManager.update(dt)
 
 	-- Split movement by axis to allow movement along collosiion boundaries
 	if (xMag ~= 0) then
-		Characters.ID.player:move(dt, xMag, 'x', DrawList[Characters.ID.player.zPos])
-		manageCollision(Characters.ID.player, xMag, 'x')
+		Entities["player"]:move(dt, xMag, 'x', DrawList[Entities["player"].zPos])
+		manageCollision(Entities["player"], xMag, 'x')
 	end
 	if (yMag ~= 0) then
-		Characters.ID.player:move(dt, yMag, "y", DrawList[Characters.ID.player.zPos])
-		manageCollision(Characters.ID.player, yMag, 'y')
+		Entities["player"]:move(dt, yMag, "y", DrawList[Entities["player"].zPos])
+		manageCollision(Entities["player"], yMag, 'y')
 	end
 
-	-- Update characters
-	Characters.update(dt)
+	local ID
+	-- Loop through all entities and update according to all game systems(FIXME: Only apply to visible characters)
+	for ID in pairs(Entities) do
+		Entities[ID]:update(dt)
+	end
+
+end
+
+-- Load characters
+function loadEntities(MapFile, imageFileIndices, DrawList)
+
+	local zVal
+
+	-- Load character data and images
+	print ("Loading characters and objects...")
+
+	spriteSheets["characters"] = {}
+	spriteSheets["objects"] = {}
+
+	-- Load non-PC character data, layer by layer
+	local layerIndex
+	local layerType
+	for layerIndex in pairs(MapFile.layers) do
+
+		-- Only process object layers
+		if (MapFile.layers[layerIndex].type == "objectgroup") then
+
+			-- Get elevation value from layer name
+			layerType, zVal = getLayerInfo(MapFile.layers[layerIndex].name)
+
+			-- Only look at map file character layers
+			if (layerType == "characters") then
+
+				local index
+
+				-- Loop through all characters in layer
+				for index in pairs(MapFile.layers[layerIndex].objects) do
+
+					local char = MapFile.layers[layerIndex].objects[index]
+					local charTexFile = "characters_"..math.ceil(char.width / tileSize).."_"..math.ceil(char.height / tileSize)
+
+					-- If new sized of character found, load new sprite sheet
+					if not (spriteSheets["characters"][char.width]) then spriteSheets["characters"][char.width] = {} end
+					if not (spriteSheets["characters"][char.width][char.height]) then
+						spriteSheets["characters"][char.width][char.height] = love.graphics.newImage("Assets/"..charTexFile..".png")
+						spriteSheets["characters"][char.width][char.height]:setFilter("nearest", "nearest")
+					end
+					-- Create character object
+					Entities[char.id] = Characters:new(char.id, char.name, spriteSheets["characters"][char.width][char.height],
+														char.x, char.y, zVal, char.width, char.height,
+														math.floor((char.gid - MapFile.tilesets[imageFileIndices[charTexFile]].firstgid) / 
+																	(MapFile.tilesets[imageFileIndices[charTexFile]].imagewidth /
+																	 MapFile.tilesets[imageFileIndices[charTexFile]].tilewidth)),
+														char.properties.speed)
+
+					-- Update drawing list for current character
+					if not (DrawList[zVal]) then DrawList[zVal] = {} end
+
+					updateDrawOrder(Entities[char.id], DrawList[zVal], true)
+
+				end
+
+			-- FIXME: Simplify same-type opbject instantiation
+			-- Only look at map file object layers
+			elseif (layerType == "objects") then
+				local index
+
+				-- Loop through all Objects in layer
+				for index in pairs(MapFile.layers[layerIndex].objects) do
+
+					local object = MapFile.layers[layerIndex].objects[index]
+					local objectTexFile = "objects_"..math.ceil(object.width / tileSize).."_"..math.ceil(object.height / tileSize)
+
+					-- If new sized of object found, load new sprite sheet
+					if not (spriteSheets["objects"][object.width]) then spriteSheets["objects"][object.width] = {} end
+					if not (spriteSheets["objects"][object.width][objectTileHeight]) then
+						spriteSheets["objects"][object.width][object.height] = love.graphics.newImage("Assets/"..objectTexFile..".png")
+						spriteSheets["objects"][object.width][object.height]:setFilter("nearest", "nearest")
+					end
+
+					-- Create object object
+					Entities[object.id] = Objects:new(object.id, spriteSheets["objects"][object.width][object.height],
+																object.x, object.y, zVal, object.width, object.height,
+																(object.gid - MapFile.tilesets[imageFileIndices[objectTexFile]].firstgid))
+					print(object.gid..", "..MapFile.tilesets[imageFileIndices[objectTexFile]].firstgid)
+
+					-- Update drawing list for current object
+					if not (DrawList[zVal]) then DrawList[zVal] = {} end
+
+					updateDrawOrder(Entities[object.id], DrawList[zVal], true)
+
+				end
+			end
+		end
+	end
+
+	-- Add character to drawing list FIXME: Get sprite and position data from save file
+	Entities["player"] = Characters:new("player", "player", spriteSheets["characters"][16][32], 1200, 800, 1, 16, 32, 2, 100)
+	updateDrawOrder(Entities["player"], DrawList[Entities["player"].zPos], true)
+
+	print("")
 
 end
 
@@ -130,6 +240,53 @@ function manageCollision(char, magnitude, axis)
 
 end
 
+-- Update list of entities to draw
+function updateDrawOrder(entity, DrawList, newEntry)
+
+	local arrayIndex
+	local added = false
+	local removed = false
+
+	local entry = {}
+	entry.ID = entity.ID
+	entry.yPos = entity.yPos
+
+	newEntry = newEntry or false
+
+	-- Compare to all values in array
+	for arrayIndex in pairs(DrawList) do
+
+		-- If the entry has not yet been added, check if it is less than the current value
+		if (not added) then
+			if (entry.yPos <= DrawList[arrayIndex].yPos) then
+				table.insert(DrawList, arrayIndex, entry)
+				arrayIndex = arrayIndex + 1
+				added = true
+
+				-- If nothing to remove, no need to look further
+				if (newEntry or removed) then break end
+			end
+		end
+
+		-- If attempting to reorder instead of add, look for old entry to remove
+		if (not newEntry) then
+			if (DrawList[arrayIndex].ID == entry.ID) then
+				table.remove(DrawList, arrayIndex)
+				removed = true
+
+				-- If entry was already added, no need to look further
+				if added then break end
+			end
+		end
+	end
+
+	-- If the entry was not added, it needs to be added to the end of the table
+	if (not added) then
+		table.insert(DrawList, entry)
+	end
+
+end
+
 -- Draw world components
 function WorldManager.draw(scale)
 
@@ -156,9 +313,7 @@ function WorldManager.draw(scale)
 		-- Draw all characters and objects based on Y coordinates
 		if (DrawList[zVal]) then
 			for drawIndex in pairs(DrawList[zVal]) do
-				if (DrawList[zVal][drawIndex].type == "characters") then
-					Characters.ID[DrawList[zVal][drawIndex].name]:draw(Camera.x, Camera.y, zVal)
-				end
+				Entities[DrawList[zVal][drawIndex].ID]:draw(Camera.x, Camera.y, zVal)
 			end
 		end
 
@@ -179,29 +334,29 @@ function WorldManager.keypressed(key)
 	if key == "up" or key == "down" or key == "left" or key == "right" then
 
 		local stateChange
-		if Characters.ID.player.state ~= "moving" then
+		if Entities["player"].state ~= "moving" then
 			stateChange = true
 		end
 
-		Characters.ID.player.direction = key
-		Characters.ID.player.state = "moving"
-		Characters.ID.player:nextAnimation(true)
+		Entities["player"].direction = key
+		Entities["player"].state = "moving"
+		Entities["player"]:nextAnimation(true)
 
 	end
 
-	-- Debug
+	-- Debug ==F
 	if key == "1" then
-		Characters.ID.player:setSprite(16, 32, 0)
-		Characters.ID.player:nextAnimation()
+		Entities["player"]:setSprite(Entities["player"].sprite.spriteSheet, 16, 32, 0)
+		Entities["player"]:nextAnimation()
 	elseif key == "2" then
-		Characters.ID.player:setSprite(16, 32, 1)
-		Characters.ID.player:nextAnimation()
+		Entities["player"]:setSprite(Entities["player"].sprite.spriteSheet, 16, 32, 1)
+		Entities["player"]:nextAnimation()
 	elseif key == "3" then
-		Characters.ID.player:setSprite(16, 32, 2)
-		Characters.ID.player:nextAnimation()
+		Entities["player"]:setSprite(Entities["player"].sprite.spriteSheet, 16, 32, 2)
+		Entities["player"]:nextAnimation()
 	elseif key == "4" then
-		Characters.ID.player:setSprite(32, 32, 0)
-		Characters.ID.player:nextAnimation()
+		Entities["player"]:setSprite(Entities["player"].sprite.spriteSheet, 32, 32, 0)
+		Entities["player"]:nextAnimation()
 	end
 
 end
@@ -211,18 +366,29 @@ function WorldManager.keyreleased(key)
 	-- Process player movement
 	if key == "up" or key == "down" or key == "left" or key == "right" then
 		if love.keyboard.isDown("up") then
-			Characters.ID.player.direction = "up"
+			Entities["player"].direction = "up"
 		elseif love.keyboard.isDown("down") then
-			Characters.ID.player.direction = "down"
+			Entities["player"].direction = "down"
 		elseif love.keyboard.isDown("left") then
-			Characters.ID.player.direction = "left"
+			Entities["player"].direction = "left"
 		elseif love.keyboard.isDown("right") then
-			Characters.ID.player.direction = "right"
+			Entities["player"].direction = "right"
 		else
-			Characters.ID.player.state = "idle"
+			Entities["player"].state = "idle"
 		end
-		Characters.ID.player:nextAnimation()
+		Entities["player"]:nextAnimation()
 	end
+
+end
+
+-- Determine layer type being loaded FIXME: find way to share this code with the world.lua copy
+function getLayerInfo(layerName)
+
+	local start = string.find(layerName, '_')
+	local elevation = tonumber(string.sub(layerName, start + 1))
+	local layerType = string.sub(layerName, 1, start - 1)
+
+	return layerType, elevation
 
 end
 

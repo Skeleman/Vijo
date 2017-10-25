@@ -454,7 +454,11 @@
   <properties>
    <property name="Tileset" value="Objects"/>
   </properties>
-  <object id="20" name="Sign" gid="935" x="1200" y="864" width="16" height="16"/>
+  <object id="20" name="Sign" type="Sign" gid="935" x="1200" y="864" width="16" height="16">
+   <properties>
+    <property name="Text" value="Hey look you can read"/>
+   </properties>
+  </object>
   <object id="21" name="Pokeball" gid="942" x="1332" y="792" width="16" height="16"/>
   <object id="22" name="Rock" gid="939" x="1132" y="970" width="16" height="16"/>
   <object id="23" name="Rock" gid="939" x="1145" y="976" width="16" height="16"/>
@@ -469,24 +473,24 @@
  <objectgroup color="#c8ffff00" name="characters_1">
   <object id="14" name="Baby" type="NPC" gid="401" x="1378.5" y="830.5" width="16" height="32">
    <properties>
-    <property name="Speed" type="float" value="30"/>
+    <property name="speed" type="int" value="30"/>
    </properties>
   </object>
   <object id="15" name="Girl" type="NPC" gid="413" x="1294" y="865.5" width="16" height="32">
    <properties>
-    <property name="Speed" type="int" value="80"/>
+    <property name="speed" type="int" value="80"/>
    </properties>
   </object>
   <object id="19" name="Secret Fat Guy" type="NPC" gid="923" x="944" y="1123" width="32" height="32">
    <properties>
-    <property name="Speed" type="int" value="1"/>
+    <property name="speed" type="int" value="1"/>
    </properties>
   </object>
  </objectgroup>
  <objectgroup name="characters_2">
   <object id="18" name="Flying Baby" type="NPC" gid="401" x="1167" y="829.5" width="16" height="32">
    <properties>
-    <property name="Speed" type="int" value="101"/>
+    <property name="speed" type="int" value="30"/>
    </properties>
   </object>
  </objectgroup>
